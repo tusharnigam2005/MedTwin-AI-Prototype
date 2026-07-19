@@ -1,0 +1,21 @@
+{
+  "name": "medtwin-ai-blockchain",
+  "version": "1.0.0",
+  "description": "Polygon smart contracts and verification layer for MedTwin AI",
+  "main": "hardhat.config.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:polygon-amoy": "hardhat run scripts/deploy.js --network polygonAmoy"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.11.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.22.2"
+  }
+}

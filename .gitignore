@@ -1,0 +1,55 @@
+# Node / Frontend
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.env.production
+
+# Python / Backend & AI
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pytest_cache/
+
+# Hardhat / Blockchain
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Database & Uploads
+*.sqlite3
+*.db
+uploads/
+test_reports/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

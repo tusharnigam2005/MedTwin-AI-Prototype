@@ -1,0 +1,9 @@
+langgraph==0.0.30
+langchain==0.1.13
+langchain-groq==0.1.0
+langchain-openai==0.1.1
+pydantic==2.6.4
+paddleocr>=2.7.3
+pytesseract>=0.3.10
+pillow>=10.2.0
+python-dotenv==1.0.1
