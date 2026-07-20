@@ -1,25 +1,39 @@
 import React from 'react';
-import { Activity, ShieldCheck, UserCheck, Stethoscope, LayoutDashboard, LogOut } from 'lucide-react';
+import { Activity, ShieldCheck, UserCheck, Stethoscope, LayoutDashboard, Menu, PanelLeft } from 'lucide-react';
 
-export default function Navbar({ activeRole, setActiveRole }) {
+export default function Navbar({ activeRole, setActiveRole, isSidebarOpen, setIsSidebarOpen }) {
   return (
-    <header className="border-b border-navy-700/80 bg-navy-900/90 backdrop-blur-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        {/* Brand Logo matching Slide 1 icons */}
-        <div className="flex items-center gap-3 cursor-pointer">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/20">
-            <Activity className="w-6 h-6 text-navy-900 font-bold" />
-          </div>
-          <div>
-            <span className="text-2xl font-bold tracking-tight text-white flex items-center gap-1.5">
-              MedTwin <span className="text-teal-400">AI</span>
-            </span>
-            <span className="text-xs text-slate-400 block font-medium">Autonomous Healthcare Digital Twin</span>
+    <header className="border-b border-navy-700/80 bg-navy-900/90 backdrop-blur-lg sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+        {/* Left Section: Toggle Button & Brand Logo */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 -ml-1 rounded-xl bg-navy-800/90 border border-navy-700 hover:bg-navy-700 text-teal-400 transition-all shadow-md active:scale-95 flex items-center justify-center"
+            title="Toggle Left Navigation"
+            aria-label="Toggle Navigation Sidebar"
+          >
+            <PanelLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+
+          <div 
+            onClick={() => setIsSidebarOpen(true)}
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group"
+          >
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-navy-900 font-bold" />
+            </div>
+            <div>
+              <span className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                MedTwin <span className="text-teal-400">AI</span>
+              </span>
+              <span className="hidden sm:block text-xs text-slate-400 font-medium">Autonomous Healthcare Digital Twin</span>
+            </div>
           </div>
         </div>
 
-        {/* Role Switcher tabs for Hackathon Demo testing */}
-        <div className="flex items-center gap-2 bg-navy-800/90 p-1.5 rounded-xl border border-navy-700">
+        {/* Role Switcher tabs for Desktop (Slide 1 testing) */}
+        <div className="hidden lg:flex items-center gap-2 bg-navy-800/90 p-1.5 rounded-xl border border-navy-700 shadow-inner">
           <button
             onClick={() => setActiveRole('patient')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
@@ -52,10 +66,21 @@ export default function Navbar({ activeRole, setActiveRole }) {
           </button>
         </div>
 
-        {/* Status indicator */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold">
-            <ShieldCheck className="w-4 h-4 animate-pulse-subtle" />
+        {/* Status indicator & Mobile Active Role Badge */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Mobile badge indicating current role */}
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden px-2.5 py-1.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
+          >
+            {activeRole === 'patient' && <UserCheck className="w-3.5 h-3.5" />}
+            {activeRole === 'doctor' && <Stethoscope className="w-3.5 h-3.5" />}
+            {activeRole === 'admin' && <LayoutDashboard className="w-3.5 h-3.5" />}
+            <span>{activeRole}</span>
+          </button>
+
+          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold">
+            <ShieldCheck className="w-4 h-4 animate-pulse-subtle shrink-0" />
             <span>Polygon On-Chain Verified</span>
           </div>
         </div>
