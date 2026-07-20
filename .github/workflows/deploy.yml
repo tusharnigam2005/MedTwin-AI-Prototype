@@ -1,0 +1,98 @@
+name: 🚀 Auto-Deploy MedTwin AI & Email Notification
+
+on:
+  push:
+    branches:
+      - main  # Trigger only when code is merged or pushed to the main branch
+
+jobs:
+  deploy-and-notify:
+    name: Deploy to Cloud Server & Send Email Alert
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the latest code repository
+      - name: 📥 Checkout Latest Code
+        uses: actions/checkout@v4
+
+      # Step 2: Connect to Cloud Server via SSH and Rebuild Docker Containers
+      - name: 🐳 SSH into Cloud Server and Update Architecture
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}           # Your Cloud Server Public IP
+          username: ${{ secrets.SERVER_USER }}       # Server username (e.g., ubuntu, root, ec2-user)
+          key: ${{ secrets.SERVER_SSH_KEY }}         # SSH Private Key for secure login
+          script: |
+            echo "=========================================================="
+            echo "🚀 Starting Automated Deployment on Cloud Server..."
+            echo "=========================================================="
+            
+            # Navigate to project directory (or clone if first time)
+            if [ ! -d "MedTwin-AI" ]; then
+              git clone https://github.com/${{ github.repository }}.git MedTwin-AI
+              cd MedTwin-AI
+            else
+              cd MedTwin-AI
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            # Pull and rebuild containers cleanly in detached mode
+            sudo docker compose up --build -d --remove-orphans
+            
+            echo "✅ Docker architecture rebuilt and running successfully!"
+            sudo docker ps
+
+      # Step 3: Send Email Notification to Team Lead upon Successful Deployment
+      - name: 📧 Send Email Alert (Success)
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}     # Your sender Gmail address
+          password: ${{ secrets.MAIL_APP_PASSWORD }} # Gmail App Password (16 characters)
+          subject: "✅ [SUCCESS] MedTwin AI Deployed to Universal Cloud URL!"
+          to: ${{ secrets.LEAD_EMAIL }}              # Team Lead destination email address
+          from: "MedTwin AI CI/CD Bot <${{ secrets.MAIL_USERNAME }}>"
+          body: |
+            Hello Team Lead! 🌟
+
+            Great news! The latest architecture of MedTwin AI has been automatically deployed and updated on the Universal Cloud Server following the recent code merge into the `main` branch.
+
+            📦 Deployment Details:
+            - Repository: ${{ github.repository }}
+            - Commit Message: ${{ github.event.head_commit.message }}
+            - Triggered By: ${{ github.actor }}
+            - Universal Web App URL: http://${{ secrets.SERVER_IP }}:5173
+            - Universal Backend API Docs: http://${{ secrets.SERVER_IP }}:8000/docs
+
+            All developers and stakeholders can now view and test the updated architecture live.
+
+            Best regards,
+            MedTwin AI Automated CI/CD System
+
+      # Step 4: Send Email Notification if Deployment Fails
+      - name: ❌ Send Email Alert (Failure)
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          subject: "⚠️ [FAILED] MedTwin AI Cloud Deployment Error"
+          to: ${{ secrets.LEAD_EMAIL }}
+          from: "MedTwin AI CI/CD Bot <${{ secrets.MAIL_USERNAME }}>"
+          body: |
+            Hello Team Lead,
+
+            The automatic cloud deployment for MedTwin AI encountered an error during the Docker container rebuild after the latest merge into `main`.
+
+            Please check the GitHub Actions logs for detailed error diagnostics:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Best regards,
+            MedTwin AI CI/CD System
