@@ -35,6 +35,18 @@ export default function LandingAuth({ onAuthSuccess }) {
     setError('');
   };
 
+  const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return `http://${window.location.hostname}:8000`;
+      }
+    }
+    return 'http://localhost:8000';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -53,7 +65,7 @@ export default function LandingAuth({ onAuthSuccess }) {
     }
 
     try {
-      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const BASE_URL = getApiBaseUrl();
       const API_BASE = `${BASE_URL}/api/auth`;
       
       if (isLoginMode) {
@@ -154,7 +166,7 @@ export default function LandingAuth({ onAuthSuccess }) {
     const target = demoCredentials[demoRole] || demoCredentials.patient;
 
     try {
-      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const BASE_URL = getApiBaseUrl();
       const bodyParams = new URLSearchParams();
       bodyParams.append('username', target.email);
       bodyParams.append('password', target.password);
