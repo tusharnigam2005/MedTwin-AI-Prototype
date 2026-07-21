@@ -1,7 +1,7 @@
 import React from 'react';
-import { Activity, ShieldCheck, UserCheck, Stethoscope, LayoutDashboard, Menu, PanelLeft } from 'lucide-react';
+import { Activity, ShieldCheck, UserCheck, Stethoscope, LayoutDashboard, Menu, PanelLeft, LogOut, User } from 'lucide-react';
 
-export default function Navbar({ activeRole, setActiveRole, isSidebarOpen, setIsSidebarOpen }) {
+export default function Navbar({ activeRole, setActiveRole, isSidebarOpen, setIsSidebarOpen, user, onLogout }) {
   return (
     <header className="border-b border-navy-700/80 bg-navy-900/90 backdrop-blur-lg sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
@@ -66,20 +66,27 @@ export default function Navbar({ activeRole, setActiveRole, isSidebarOpen, setIs
           </button>
         </div>
 
-        {/* Status indicator & Mobile Active Role Badge */}
+        {/* Status indicator & User Profile / Logout */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Mobile badge indicating current role */}
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="lg:hidden px-2.5 py-1.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
-          >
-            {activeRole === 'patient' && <UserCheck className="w-3.5 h-3.5" />}
-            {activeRole === 'doctor' && <Stethoscope className="w-3.5 h-3.5" />}
-            {activeRole === 'admin' && <LayoutDashboard className="w-3.5 h-3.5" />}
-            <span>{activeRole}</span>
-          </button>
+          {user && (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-navy-800 border border-navy-700 text-slate-300 text-xs font-medium">
+              <User className="w-3.5 h-3.5 text-teal-400" />
+              <span className="truncate max-w-[120px]">{user.name}</span>
+            </div>
+          )}
 
-          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold">
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+              title="Logout from Portal"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          )}
+
+          <div className="hidden xl:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold">
             <ShieldCheck className="w-4 h-4 animate-pulse-subtle shrink-0" />
             <span>Polygon On-Chain Verified</span>
           </div>
