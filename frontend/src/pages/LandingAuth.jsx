@@ -53,7 +53,8 @@ export default function LandingAuth({ onAuthSuccess }) {
     }
 
     try {
-      const API_BASE = 'http://localhost:8000/api/auth';
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const API_BASE = `${BASE_URL}/api/auth`;
       
       if (isLoginMode) {
         // Login using real FastAPI OAuth2 form data
@@ -74,6 +75,7 @@ export default function LandingAuth({ onAuthSuccess }) {
 
         const data = await res.json();
         localStorage.setItem('medtwin_token', data.access_token);
+        localStorage.setItem('medtwin_jwt', data.access_token);
         onAuthSuccess(data.role || role, {
           name: formData.email.split('@')[0].toUpperCase(),
           email: formData.email,
@@ -116,6 +118,7 @@ export default function LandingAuth({ onAuthSuccess }) {
         if (loginRes.ok) {
           const data = await loginRes.json();
           localStorage.setItem('medtwin_token', data.access_token);
+          localStorage.setItem('medtwin_jwt', data.access_token);
           onAuthSuccess(role, {
             name: formData.fullName || formData.email.split('@')[0],
             email: formData.email,
@@ -132,7 +135,7 @@ export default function LandingAuth({ onAuthSuccess }) {
       console.warn('Real backend call error, falling back if offline:', err.message);
       // If backend is unreachable or errored, show clean error or fallback
       if (err.message.includes('Failed to fetch')) {
-        setError('Cannot connect to Backend (localhost:8000). Is the server running?');
+        setError('Cannot connect to Backend API. Is the server running?');
       } else {
         setError(err.message);
       }
@@ -151,11 +154,12 @@ export default function LandingAuth({ onAuthSuccess }) {
     const target = demoCredentials[demoRole] || demoCredentials.patient;
 
     try {
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       const bodyParams = new URLSearchParams();
       bodyParams.append('username', target.email);
       bodyParams.append('password', target.password);
 
-      const res = await fetch('http://localhost:8000/api/auth/login', {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: bodyParams
@@ -164,6 +168,7 @@ export default function LandingAuth({ onAuthSuccess }) {
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem('medtwin_token', data.access_token);
+        localStorage.setItem('medtwin_jwt', data.access_token);
         onAuthSuccess(demoRole, {
           name: target.name,
           email: target.email,
