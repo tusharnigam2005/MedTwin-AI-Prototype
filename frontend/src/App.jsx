@@ -4,10 +4,29 @@ import Sidebar from './components/Sidebar';
 import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import LandingAuth from './pages/LandingAuth';
 
 export default function App() {
   const [activeRole, setActiveRole] = useState('patient'); // 'patient', 'doctor', or 'admin'
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const handleAuthSuccess = (role, userData) => {
+    setActiveRole(role);
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  // If not authenticated, render the starting Landing & Auth Page
+  if (!isAuthenticated) {
+    return <LandingAuth onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-navy-900 text-slate-100">
@@ -19,12 +38,14 @@ export default function App() {
         setIsSidebarOpen={setIsSidebarOpen} 
       />
 
-      {/* Top Navbar with Toggle Button */}
+      {/* Top Navbar with Toggle Button & Logout */}
       <Navbar 
         activeRole={activeRole} 
         setActiveRole={setActiveRole} 
         isSidebarOpen={isSidebarOpen} 
-        setIsSidebarOpen={setIsSidebarOpen} 
+        setIsSidebarOpen={setIsSidebarOpen}
+        user={user}
+        onLogout={handleLogout}
       />
 
       {/* Main Responsive Content Area */}
