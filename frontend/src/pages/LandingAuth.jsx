@@ -36,15 +36,12 @@ export default function LandingAuth({ onAuthSuccess }) {
   };
 
   const getApiBaseUrl = () => {
-    if (import.meta.env.VITE_API_BASE_URL) {
-      return import.meta.env.VITE_API_BASE_URL;
-    }
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
       if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         return `http://${window.location.hostname}:8000`;
       }
     }
-    return 'http://localhost:8000';
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
   };
 
   const handleSubmit = async (e) => {
@@ -398,24 +395,6 @@ export default function LandingAuth({ onAuthSuccess }) {
                 </div>
               )}
 
-              {!isLoginMode && (
-                <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1 flex items-center justify-between">
-                    <span>Polygon Wallet Address (Optional)</span>
-                    <span className="text-[10px] text-teal-400 font-mono">Web3 Linked</span>
-                  </label>
-                  <div className="relative">
-                    <Wallet className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" />
-                    <input
-                      type="text"
-                      name="walletAddress"
-                      value={formData.walletAddress}
-                      onChange={handleInputChange}
-                      className="w-full bg-navy-900/80 border border-navy-700 rounded-xl pl-10 pr-4 py-2.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-teal-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              )}
 
               {error && (
                 <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
