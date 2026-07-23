@@ -36,6 +36,7 @@ export default function App() {
         setActiveRole={setActiveRole} 
         isSidebarOpen={isSidebarOpen} 
         setIsSidebarOpen={setIsSidebarOpen} 
+        user={user}
       />
 
       {/* Top Navbar with Toggle Button & Logout */}

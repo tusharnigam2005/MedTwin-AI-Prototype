@@ -32,39 +32,49 @@ export default function Navbar({ activeRole, setActiveRole, isSidebarOpen, setIs
           </div>
         </div>
 
-        {/* Role Switcher tabs for Desktop (Slide 1 testing) */}
-        <div className="hidden lg:flex items-center gap-2 bg-navy-800/90 p-1.5 rounded-xl border border-navy-700 shadow-inner">
-          <button
-            onClick={() => setActiveRole('patient')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeRole === 'patient'
-                ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <UserCheck className="w-4 h-4" /> Patient Twin
-          </button>
-          <button
-            onClick={() => setActiveRole('doctor')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeRole === 'doctor'
-                ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Stethoscope className="w-4 h-4" /> Doctor Portal
-          </button>
-          <button
-            onClick={() => setActiveRole('admin')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeRole === 'admin'
-                ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" /> Admin Monitoring
-          </button>
-        </div>
+        {/* Role Switcher tabs or Role Locked Badge */}
+        {user ? (
+          <div className="hidden md:flex items-center gap-2.5 bg-navy-800/90 px-4 py-2 rounded-xl border border-teal-500/30 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="text-xs font-mono font-bold text-teal-300 uppercase tracking-wider">
+              Session Locked: {activeRole} Portal
+            </span>
+            <span className="text-[10px] bg-navy-900 px-2 py-0.5 rounded text-slate-400 font-mono">Verified Role</span>
+          </div>
+        ) : (
+          <div className="hidden lg:flex items-center gap-2 bg-navy-800/90 p-1.5 rounded-xl border border-navy-700 shadow-inner">
+            <button
+              onClick={() => setActiveRole('patient')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeRole === 'patient'
+                  ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" /> Patient Twin
+            </button>
+            <button
+              onClick={() => setActiveRole('doctor')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeRole === 'doctor'
+                  ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Stethoscope className="w-4 h-4" /> Doctor Portal
+            </button>
+            <button
+              onClick={() => setActiveRole('admin')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeRole === 'admin'
+                  ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" /> Admin Monitoring
+            </button>
+          </div>
+        )}
 
         {/* Status indicator & User Profile / Logout */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
