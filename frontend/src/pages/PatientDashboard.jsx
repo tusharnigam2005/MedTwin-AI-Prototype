@@ -1,147 +1,159 @@
-import React from 'react';
-import { Activity, ShieldCheck, Heart, Pill, Apple, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
-import RiskChart from '../components/RiskChart';
+import AgentResults from '../components/AgentResults';
+import { useAuth } from '../context/AuthContext';
+import {
+  HeartPulse, Upload, RotateCcw, Activity, TrendingUp,
+  FileText, Shield, CheckCircle2, Clock
+} from 'lucide-react';
 
 export default function PatientDashboard() {
+  const { user } = useAuth();
+  const [result, setResult] = useState(null);
+
+  const triageLevel = result?.emergency_analysis?.triage_level || 'routine';
+  const doctorApproved = result ? false : true;
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Top Welcome & Score Header matching Slide 28 UI Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Health Score Card (Slide 28: 82 / 100) */}
-        <div className="glass-card md:col-span-2 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-navy-800 to-navy-700/90">
-          <div className="flex items-start justify-between z-10">
-            <div>
-              <span className="text-xs font-semibold text-teal-400 uppercase tracking-wider block mb-1">
-                Continuous Twin Status
-              </span>
-              <h1 className="text-3xl font-extrabold text-white">Health Score</h1>
-              <p className="text-slate-400 text-sm mt-1">
-                Persistent AI model of your cardiovascular, metabolic, and lifestyle state.
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-              <Activity className="w-6 h-6 text-teal-400" />
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+      <Navbar />
 
-          <div className="mt-8 flex items-baseline gap-4 z-10">
-            <span className="text-6xl font-black tracking-tight text-teal-400 drop-shadow-md">
-              82 <span className="text-3xl font-bold text-slate-400">/ 100</span>
-            </span>
-            <span className="px-3.5 py-1.5 rounded-full bg-teal-500/20 text-teal-300 font-bold text-sm">
-              OPTIMAL BASELINE
-            </span>
-          </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
-          {/* Background decoration glow */}
-          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        </div>
-
-        {/* Current Risk Card (Slide 28: Low) */}
-        <div className="glass-card flex flex-col justify-between border-l-4 border-l-teal-400">
+        {/* Top Greeting */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-              Prediction Agent Status
-            </span>
-            <h2 className="text-xl font-bold text-white mt-1">Current Risk Status</h2>
-          </div>
-
-          <div className="my-6">
-            <span className="text-5xl font-black text-teal-400">Low</span>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              No critical chronic disease trajectory indicators flagged from your latest 5-agent LangGraph analysis.
+            <h1 className="text-3xl font-extrabold text-slate-900 font-sans">
+              Welcome, <span className="text-sky-500">{user?.name || 'Patient'}</span>
+            </h1>
+            <p className="text-slate-500 text-xs mt-1">
+              Upload your medical documents to view analysis from the 5 AI agents.
             </p>
           </div>
 
-          <div className="pt-4 border-t border-navy-700/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Confidence Level: <strong className="text-white">94.2%</strong></span>
-            <span className="text-teal-400 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Stable</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Middle Grid: Upload Report & Trajectory Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReportUpload />
-        <RiskChart />
-      </div>
-
-      {/* Bottom Grid: Recent Recommendations & Blockchain Verification matching Slide 28 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recent Recommendations */}
-        <div className="glass-card space-y-4">
-          <div className="flex items-center justify-between border-b border-navy-700/80 pb-3">
-            <h3 className="font-bold text-white text-lg flex items-center gap-2">
-              <Apple className="w-5 h-5 text-teal-400" /> Recent Recommendations
-            </h3>
-            <span className="text-xs text-slate-400">Doctor Sign-Off Verified</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="p-4 rounded-xl bg-navy-900/60 border border-navy-700/60 flex items-start gap-3.5">
-              <Pill className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-white">Medication Agent Schedule</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Maintain Metformin 500mg daily. No drug interactions flagged with new vitamin regimen.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-navy-900/60 border border-navy-700/60 flex items-start gap-3.5">
-              <Heart className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-white">Lifestyle Optimization Target</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  30 minutes moderate cardio. Hydration target adjusted to 2.8L based on wearable sleep recovery score.
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-sky-500" />
+              Patient Twin Active
+            </span>
           </div>
         </div>
 
-        {/* Blockchain Verification Box (Slide 28 exact replica) */}
-        <div className="glass-card flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-navy-700/80 pb-3">
-              <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-teal-400" /> Blockchain Verification
-              </h3>
-              <span className="px-2.5 py-1 rounded bg-teal-500/10 text-teal-400 text-xs font-semibold">
-                Polygon Network
-              </span>
-            </div>
+        {/* Top Summary Cards (Section 12 requirement) */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-            <div className="mt-6 space-y-4">
-              <div className="p-4 rounded-xl bg-navy-900/80 border border-teal-500/20 font-mono text-xs space-y-2">
-                <div className="flex justify-between text-slate-400">
-                  <span>Smart Contract:</span>
-                  <span className="text-teal-400">MedTwinTrust.sol</span>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>SHA-256 Hash:</span>
-                  <span className="text-slate-200 truncate max-w-[200px]">e3b0c44298fc1c149afbf4c8996fb924</span>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Block Number:</span>
-                  <span className="text-slate-200">#14,258,902</span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-400">
-                Only the cryptographic hash goes on-chain — raw patient data never leaves our encrypted database (Slide 25).
+          {/* Health Analysis Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Health Analysis</span>
+              <Activity className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {result ? 'Report Analyzed' : 'Baseline Active'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? '5 AI agents processed' : 'Upload a report to generate AI analysis'}
+            </p>
+          </div>
+
+          {/* Current Risk Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Current Risk</span>
+              <TrendingUp className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900 capitalize">
+              {result ? triageLevel : 'Low Risk'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? 'From latest report data' : 'Multi-factor baseline'}
+            </p>
+          </div>
+
+          {/* Latest Report Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Latest Report</span>
+              <FileText className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {result ? 'CBC / Blood Test' : 'No Report'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? result.medical_report?.report_date || 'Processed today' : 'Awaiting document upload'}
+            </p>
+          </div>
+
+          {/* Doctor Review Status Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Doctor Review Status</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {result ? (doctorApproved ? 'Approved' : 'Pending Sign-Off') : 'Up to Date'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? 'Routed to doctor queue' : 'No pending reviews'}
+            </p>
+          </div>
+        </div>
+
+        {/* Upload Medical Report Section */}
+        {!result ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="text-lg font-bold text-slate-900">
+                Upload Medical Report
+              </h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Upload a blood test PDF, prescription, or lab scan to generate your MedTwin AI analysis.
               </p>
             </div>
-          </div>
 
-          <div className="pt-4 border-t border-navy-700/80 flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-teal-400" /> Last record verified 2h ago
-            </span>
-            <span className="text-teal-400 font-mono">Tx 0x8f...3a1</span>
+            <ReportUpload onResult={setResult} />
           </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  AI Agent Analysis Results
+                </h2>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Consolidated output from the 5 AI agents.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setResult(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-all"
+              >
+                <RotateCcw className="w-4 h-4 text-sky-500" />
+                <span>Upload Another Report</span>
+              </button>
+            </div>
+
+            <AgentResults result={result} />
+          </div>
+        )}
+
+        {/* Clean Blockchain Integration Placeholder (Section 13 requirement) */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 text-xs text-slate-500 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-slate-400" />
+            <span><strong className="text-slate-700">Verification:</strong> Blockchain Integration — Status: Pending / Next Implementation Phase</span>
+          </div>
+          <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold text-[11px]">
+            Placeholder
+          </span>
         </div>
-      </div>
+      </main>
+
+      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+        MedTwin AI Platform · Decision-support prototype · Not a substitute for professional medical advice
+      </footer>
     </div>
   );
 }

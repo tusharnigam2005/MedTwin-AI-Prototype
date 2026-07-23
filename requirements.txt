@@ -1,0 +1,22 @@
+# MedTwin AI Project - Complete Python Requirements
+
+# FastAPI Backend & Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.1
+python-multipart>=0.0.9
+
+# AI & LLM Engine (Google Gemini 3.1 & LangGraph)
+google-genai>=0.1.1
+langgraph>=0.0.30
+pydantic>=2.6.4
+python-dotenv>=1.0.1
+
+# Document OCR & Processing
+pymupdf>=1.23.0
+paddleocr>=2.7.3
+pytesseract>=0.3.10
+pillow>=10.2.0
+
+# HTTP & UI Utilities
+httpx>=0.27.0
+streamlit>=1.32.0
