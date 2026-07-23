@@ -15,8 +15,9 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export default function Sidebar({ activeRole, setActiveRole, isSidebarOpen, setIsSidebarOpen }) {
+export default function Sidebar({ activeRole, setActiveRole, isSidebarOpen, setIsSidebarOpen, user }) {
   const handleRoleChange = (role) => {
+    if (user) return; // Prevent role switching when logged in
     setActiveRole(role);
     // On mobile screens, close sidebar after choosing role for smooth UX
     if (window.innerWidth < 1024) {
@@ -63,58 +64,79 @@ export default function Sidebar({ activeRole, setActiveRole, isSidebarOpen, setI
             </button>
           </div>
 
-          {/* Role Switcher Section */}
-          <div className="space-y-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block px-1">
-              Switch Portal Role
-            </span>
-            <div className="space-y-1.5">
-              <button
-                onClick={() => handleRoleChange('patient')}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  activeRole === 'patient'
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
-                    : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <UserCheck className={`w-4 h-4 ${activeRole === 'patient' ? 'text-navy-900' : 'text-teal-400'}`} />
-                  <span>Patient Twin</span>
-                </div>
-                {activeRole === 'patient' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
-              </button>
-
-              <button
-                onClick={() => handleRoleChange('doctor')}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  activeRole === 'doctor'
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
-                    : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Stethoscope className={`w-4 h-4 ${activeRole === 'doctor' ? 'text-navy-900' : 'text-teal-400'}`} />
-                  <span>Doctor Portal</span>
-                </div>
-                {activeRole === 'doctor' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
-              </button>
-
-              <button
-                onClick={() => handleRoleChange('admin')}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  activeRole === 'admin'
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
-                    : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <LayoutDashboard className={`w-4 h-4 ${activeRole === 'admin' ? 'text-navy-900' : 'text-teal-400'}`} />
-                  <span>Admin Monitoring</span>
-                </div>
-                {activeRole === 'admin' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
-              </button>
+          {/* Role Switcher or Authenticated Locked Profile Card */}
+          {user ? (
+            <div className="p-4 rounded-2xl bg-navy-800/90 border border-teal-500/30 space-y-3 shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase font-bold text-teal-400 tracking-wider bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20">
+                  Authentication Lock
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white tracking-tight">{user.name || user.email}</h4>
+                <p className="text-xs text-slate-400 font-mono mt-0.5 capitalize">Role: {activeRole} Portal</p>
+              </div>
+              <div className="pt-2 border-t border-navy-700/80 flex items-center justify-between text-[11px] text-slate-400">
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Verified Account
+                </span>
+                <span>JWT Protected</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block px-1">
+                Switch Portal Role
+              </span>
+              <div className="space-y-1.5">
+                <button
+                  onClick={() => handleRoleChange('patient')}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                    activeRole === 'patient'
+                      ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
+                      : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <UserCheck className={`w-4 h-4 ${activeRole === 'patient' ? 'text-navy-900' : 'text-teal-400'}`} />
+                    <span>Patient Twin</span>
+                  </div>
+                  {activeRole === 'patient' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
+                </button>
+
+                <button
+                  onClick={() => handleRoleChange('doctor')}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                    activeRole === 'doctor'
+                      ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
+                      : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Stethoscope className={`w-4 h-4 ${activeRole === 'doctor' ? 'text-navy-900' : 'text-teal-400'}`} />
+                    <span>Doctor Portal</span>
+                  </div>
+                  {activeRole === 'doctor' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
+                </button>
+
+                <button
+                  onClick={() => handleRoleChange('admin')}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                    activeRole === 'admin'
+                      ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md shadow-teal-500/10'
+                      : 'bg-navy-800/60 hover:bg-navy-800 text-slate-300 hover:text-white border border-navy-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard className={`w-4 h-4 ${activeRole === 'admin' ? 'text-navy-900' : 'text-teal-400'}`} />
+                    <span>Admin Monitoring</span>
+                  </div>
+                  {activeRole === 'admin' && <span className="w-2 h-2 rounded-full bg-navy-900 animate-pulse" />}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Navigation Links / Modules */}
           <div className="space-y-2 pt-2">
