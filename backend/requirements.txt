@@ -16,4 +16,5 @@ langchain-groq>=0.1.0
 langchain-openai>=0.1.1
 google-genai>=0.1.1
 pymupdf>=1.23.0
+paddlepaddle>=2.6.0
 paddleocr>=2.7.3

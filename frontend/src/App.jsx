@@ -1,79 +1,78 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import LandingPage from './pages/LandingPage';
 import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import LandingAuth from './pages/LandingAuth';
-import OnboardingModal from './components/OnboardingModal';
+
+function ProtectedRoute({ children, requiredRole }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/" replace />;
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'admin' ? '/admin' : '/patient'} replace />;
+  }
+  return children;
+}
 
 export default function App() {
-  const [activeRole, setActiveRole] = useState('patient'); // 'patient', 'doctor', or 'admin'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  const handleAuthSuccess = (role, userData) => {
-    setActiveRole(role);
-    setUser(userData);
-    setIsAuthenticated(true);
-    // If patient, trigger onboarding/verification flow before dashboard
-    if (role === 'patient') {
-      setShowOnboarding(true);
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    setShowOnboarding(false);
-  };
-
-  // If not authenticated, render the starting Landing & Auth Page
-  if (!isAuthenticated) {
-    return <LandingAuth onAuthSuccess={handleAuthSuccess} />;
-  }
+  const { user } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900 text-slate-100 relative">
-      {/* Pre-onboarding Modal Overlay for Patient Role */}
-      {showOnboarding && activeRole === 'patient' && (
-        <OnboardingModal user={user} onComplete={() => setShowOnboarding(false)} />
-      )}
-
-      {/* Left Navigation Sidebar Drawer */}
-      <Sidebar 
-        activeRole={activeRole} 
-        setActiveRole={setActiveRole} 
-        isSidebarOpen={isSidebarOpen} 
-        setIsSidebarOpen={setIsSidebarOpen} 
-        user={user}
+    <Routes>
+      <Route
+        path="/"
+        element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'admin' ? '/admin' : '/patient'} replace /> : <LandingPage />}
       />
-
-      {/* Top Navbar with Toggle Button & Logout */}
-      <Navbar 
-        activeRole={activeRole} 
-        setActiveRole={setActiveRole} 
-        isSidebarOpen={isSidebarOpen} 
-        setIsSidebarOpen={setIsSidebarOpen}
-        user={user}
-        onLogout={handleLogout}
+      <Route
+        path="/patient"
+        element={
+          <ProtectedRoute requiredRole="patient">
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
       />
-
-      {/* Main Responsive Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden">
-        {activeRole === 'patient' && <PatientDashboard />}
-        {activeRole === 'doctor' && <DoctorDashboard />}
-        {activeRole === 'admin' && <AdminDashboard />}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-navy-700/60 bg-navy-900/50 py-6 text-center text-xs text-slate-400 px-4">
-        <p>
-          Team MedTwin · Round 02 — The Terminal Lockdown · Gwalior 2026 | Technical Engineering Deck · Black-Box Protocol
-        </p>
-      </footer>
-    </div>
+      <Route
+        path="/patient/*"
+        element={
+          <ProtectedRoute requiredRole="patient">
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor"
+        element={
+          <ProtectedRoute requiredRole="doctor">
+            <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor/*"
+        element={
+          <ProtectedRoute requiredRole="doctor">
+            <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
