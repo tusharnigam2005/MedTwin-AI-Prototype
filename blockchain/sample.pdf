@@ -1,0 +1,354 @@
+MedTwin AI – Blockchain Module Implementation Report
+
+Project: MedTwin AI – Autonomous AI Healthcare Digital Twin
+
+Module: Blockchain
+
+Developer: Tanishka Chaudhary
+
+Network: Polygon Amoy Testnet
+
+Framework: Hardhat
+
+Language: Solidity
+
+Date: July 2026
+
+1. Introduction
+
+The blockchain module of MedTwin AI provides an immutable audit trail for medical documents. Instead of storing sensitive medical reports directly on the blockchain, the system stores a cryptographic hash of each document. This approach ensures data integrity, reduces blockchain storage costs, and protects patient privacy.
+
+The blockchain layer has been developed independently inside the blockchain/ directory without modifying any other project modules.
+
+2. Objective
+
+The objective of this module is to:
+
+Record the cryptographic hash of uploaded medical documents.
+Associate the document with the doctor's blockchain wallet.
+Record the timestamp when the document was registered.
+Prevent duplicate document registrations.
+Allow anyone to verify whether a document has already been recorded.
+3. Technology Stack
+Component	Technology
+Smart Contract	Solidity 0.8.x
+Development Framework	Hardhat
+Blockchain Network	Polygon Amoy Testnet
+Wallet	MetaMask
+Library	Ethers.js
+Environment Variables	dotenv
+Testing	Hardhat + Mocha + Chai
+4. Folder Structure
+blockchain/
+
+├── contracts/
+│     MedTwinTrust.sol
+│
+├── scripts/
+│     deploy.js
+│
+├── test/
+│     MedTwinTrust.test.js
+│
+├── abi/
+│     MedTwinTrust.json
+│
+├── examples/
+│     hash_example.js
+│     record_example.js
+│     verify_example.js
+│
+├── artifacts/
+│
+├── hardhat.config.js
+├── package.json
+├── README.md
+├── contract-address.txt
+└── .env
+5. Smart Contract Overview
+
+The smart contract is named MedTwinTrust.
+
+Its responsibility is to securely store document fingerprints (hashes) and maintain an immutable record of medical documents.
+
+The contract stores:
+
+Document Hash
+Doctor Wallet Address
+Timestamp
+
+The contract does not store:
+
+PDF files
+Medical reports
+Patient information
+Images
+
+This design keeps medical information private while ensuring authenticity can be verified later.
+
+6. Smart Contract Functions
+recordSignature(bytes32 docHash)
+
+Purpose:
+
+Stores a new medical document hash.
+
+Functionality:
+
+Accepts a keccak256 hash.
+Saves the doctor's wallet address.
+Stores the current blockchain timestamp.
+Rejects duplicate hashes.
+verify(bytes32 docHash)
+
+Purpose:
+
+Checks whether a document hash already exists.
+
+Returns:
+
+Doctor Wallet Address
+Timestamp
+Exists (true/false)
+isRecorded(bytes32 docHash)
+
+Purpose:
+
+Returns only whether a document has already been registered.
+
+Return Type:
+
+bool
+7. Blockchain Workflow
+
+The blockchain does not receive PDF files directly.
+
+Instead, it receives a cryptographic hash generated from the uploaded document.
+
+Workflow:
+
+User Uploads PDF
+        │
+        ▼
+React Frontend
+        │
+        ▼
+FastAPI Backend
+        │
+Reads PDF
+        │
+Generates keccak256 Hash
+        │
+        ▼
+recordSignature(hash)
+        │
+        ▼
+Polygon Blockchain
+
+Only the generated hash is stored on-chain.
+
+8. Why the PDF Is Not Stored on Blockchain
+
+Storing complete medical reports directly on-chain is not recommended because:
+
+Large files are expensive to store.
+Every node would permanently store the document.
+Medical data should remain private.
+
+Instead:
+
+PDF
+
+↓
+
+keccak256()
+
+↓
+
+32-byte Hash
+
+↓
+
+Stored on Blockchain
+
+This approach ensures:
+
+Privacy
+Lower transaction cost
+Fast verification
+Immutable proof of existence
+9. Verification Process
+
+When a document needs verification:
+
+Upload the PDF again.
+Generate the keccak256 hash.
+Call:
+verify(hash)
+
+If the returned value is:
+
+exists = true
+
+The document is authentic.
+
+If:
+
+exists = false
+
+The uploaded document has never been recorded or has been modified.
+
+10. Unit Testing
+
+The contract was tested using Hardhat.
+
+Test cases include:
+
+Test 1
+
+Successful document registration.
+
+Expected Result:
+
+Pass
+
+Test 2
+
+Duplicate document registration.
+
+Expected Result:
+
+Transaction reverts.
+
+Test 3
+
+Verify unknown hash.
+
+Expected Result:
+
+exists = false
+Test 4
+
+Verify existing document.
+
+Expected Result:
+
+Doctor address matches
+Timestamp exists
+exists = true
+11. Deployment
+
+The smart contract was deployed on:
+
+Polygon Amoy Testnet
+
+Deployment performed using:
+
+npx hardhat run scripts/deploy.js --network amoy
+
+Deployment completed successfully.
+
+12. ABI Generation
+
+After compilation:
+
+npx hardhat compile
+
+Hardhat generated:
+
+artifacts/contracts/
+    MedTwinTrust.sol/
+        MedTwinTrust.json
+
+The ABI was copied into:
+
+blockchain/abi/
+
+The backend team can use this ABI for integration with Ethers.js.
+
+13. Backend Integration
+
+The blockchain module expects:
+
+bytes32 docHash
+
+Backend responsibilities:
+
+Receive uploaded PDF.
+Read file.
+Generate:
+keccak256(pdfBytes)
+Call:
+recordSignature(hash)
+
+The blockchain stores only the hash.
+
+14. Example Integration
+
+Store document:
+
+recordSignature(hash)
+
+Verify document:
+
+verify(hash)
+
+No blockchain changes are required in the frontend.
+
+15. Security Features
+
+Implemented security measures include:
+
+Duplicate prevention
+Immutable blockchain storage
+Timestamp recording
+Doctor wallet recording
+Hash-based verification
+Privacy-preserving design
+16. Advantages
+Immutable records
+Tamper detection
+Low blockchain storage cost
+No patient information stored on-chain
+Easy backend integration
+Transparent audit trail
+17. Limitations
+
+The blockchain module does not:
+
+Store PDF files.
+Read uploaded documents.
+Generate hashes from files.
+
+Hash generation is expected to be handled by the backend before interacting with the smart contract.
+
+18. Deliverables
+
+Completed deliverables include:
+
+Smart Contract (MedTwinTrust.sol)
+Hardhat Configuration
+Deployment Script
+Unit Tests
+Polygon Amoy Deployment
+ABI Generation
+Integration Examples
+Documentation
+Contract Address
+19. Conclusion
+
+The blockchain module successfully implements an immutable document verification system for MedTwin AI. By storing only cryptographic hashes on the Polygon Amoy blockchain, the system ensures document authenticity while maintaining patient privacy. The module is designed to integrate seamlessly with the backend through a simple interface that accepts document hashes, making it suitable for secure healthcare record verification.
+
+Appendix
+
+Contract Name: MedTwinTrust
+
+Network: Polygon Amoy Testnet
+
+Compiler: Solidity 0.8.x
+
+Framework: Hardhat
+
+Hash Algorithm: keccak256
+
+Blockchain: Polygon PoS (Amoy Testnet)

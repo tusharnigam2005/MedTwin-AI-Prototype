@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2",
-    "dotenv": "^16.4.5",
-    "ethers": "^6.11.1"
+    "dotenv": "^16.6.1",
+    "ethers": "^6.17.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",

@@ -1,19 +1,26 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log("Deploying MedTwinTrust contract to network:", hre.network.name);
 
-  const MedTwinTrust = await hre.ethers.getContractFactory("MedTwinTrust");
-  const contract = await MedTwinTrust.deploy();
+    console.log("Deploying MedTwinTrust...");
 
-  await contract.waitForDeployment();
-  const address = await contract.getAddress();
+    const Factory = await hre.ethers.getContractFactory("MedTwinTrust");
 
-  console.log(`✅ MedTwinTrust deployed successfully at address: ${address}`);
-  console.log("Ensure you set this address in your backend and frontend environment configurations!");
+    const contract = await Factory.deploy();
+
+    await contract.waitForDeployment();
+
+    console.log(
+        "Contract deployed to:",
+        await contract.getAddress()
+    );
+
 }
 
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+
+    console.error(error);
+
+    process.exitCode = 1;
+
 });
