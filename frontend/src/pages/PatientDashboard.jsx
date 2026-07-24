@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Activity, ShieldCheck, Heart, Pill, Apple, AlertTriangle, CheckCircle, Clock, Sparkles, Cpu } from 'lucide-react';
 import ReportUpload from '../components/ReportUpload';
 import RiskChart from '../components/RiskChart';
 import LangGraphAgentsPanel from '../components/LangGraphAgentsPanel';
+import AgentResults from '../components/AgentResults';
 
 export default function PatientDashboard() {
+  const [result, setResult] = useState(null);
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Top Welcome & Score Header matching Slide 28 & Enterprise Medical Theme */}
@@ -76,9 +78,16 @@ export default function PatientDashboard() {
 
       {/* Middle Grid: Upload Report & Trajectory Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReportUpload />
+        <ReportUpload onResult={setResult} />
         <RiskChart />
       </div>
+
+      {/* Dynamic Agent Results Output (Hidden until file is uploaded) */}
+      {result && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <AgentResults result={result} />
+        </div>
+      )}
 
       {/* Bottom Grid: Recent Recommendations & Blockchain Verification */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
