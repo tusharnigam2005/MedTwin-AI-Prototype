@@ -13,6 +13,33 @@ class ApprovalRequest(BaseModel):
     action_status: str  # 'approved' or 'rejected'
     override_notes: str | None = None
 
+@router.get("/queue", summary="Get pending recommendations for Doctor review")
+def get_doctor_queue(
+    db: Session = Depends(get_db),
+    current_doctor: User = Depends(require_role("doctor"))
+):
+    # Fetch pending recommendations joined with prediction and patient
+    pending = db.query(Recommendation).filter(Recommendation.status == "pending_doctor_review").all()
+    
+    queue = []
+    for rec in pending:
+        prediction = rec.prediction
+        patient = prediction.patient
+        patient_user = patient.user
+        
+        queue.append({
+            "id": rec.id,
+            "patient_name": patient_user.email.split('@')[0].replace('.', ' ').title(),
+            "patient_id": patient.id,
+            "risk_score": prediction.risk_score,
+            "confidence": prediction.confidence,
+            "ai_recommendation": rec.action,
+            "created_at": rec.created_at,
+            "status": rec.status
+        })
+        
+    return queue
+
 @router.post("/approve/{record_id}", summary="Doctor approval action on a pending recommendation (Slide 33)")
 def doctor_approve_record(
     record_id: int, 

@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Users, FileText, Activity, Server } from 'lucide-react';
+import { Shield, Users, FileText, Activity, Server, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab] = useState('monitoring');
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get('http://localhost:8000/api/admin/stats');
+        setStats(res.data);
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Failed to connect to backend.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
@@ -49,25 +68,38 @@ export default function AdminDashboard() {
         {/* TAB 1: MONITORING */}
         {tab === 'monitoring' && (
           <div className="space-y-6">
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-                <p className="text-slate-500 text-xs font-bold uppercase">System Uptime</p>
-                <p className="text-3xl font-extrabold text-slate-900">99.9%</p>
-                <p className="text-emerald-600 text-xs font-semibold">✓ All services operational</p>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-sky-500 mb-4" />
+                <p className="text-slate-500 text-sm font-semibold">Loading system statistics...</p>
               </div>
+            ) : error ? (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 text-sm font-semibold">
+                ⚠ {error}
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
+                  <p className="text-slate-500 text-xs font-bold uppercase">Total Users</p>
+                  <p className="text-3xl font-extrabold text-slate-900">{stats.total_users}</p>
+                </div>
+                
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
+                  <p className="text-slate-500 text-xs font-bold uppercase">Active Doctors</p>
+                  <p className="text-3xl font-extrabold text-slate-900">{stats.active_doctors}</p>
+                </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-                <p className="text-slate-500 text-xs font-bold uppercase">Active AI Agents</p>
-                <p className="text-3xl font-extrabold text-slate-900">5 / 5</p>
-                <p className="text-sky-600 text-xs font-semibold">LangGraph Pipeline Ready</p>
-              </div>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
+                  <p className="text-slate-500 text-xs font-bold uppercase">Processed Reports</p>
+                  <p className="text-3xl font-extrabold text-slate-900">{stats.processed_reports}</p>
+                </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-                <p className="text-slate-500 text-xs font-bold uppercase">API Latency (p95)</p>
-                <p className="text-3xl font-extrabold text-slate-900">420ms</p>
-                <p className="text-slate-500 text-xs">FastAPI bridge server</p>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
+                  <p className="text-slate-500 text-xs font-bold uppercase">Blockchain Verifications</p>
+                  <p className="text-3xl font-extrabold text-slate-900">{stats.blockchain_verifications}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

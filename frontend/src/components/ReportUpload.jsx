@@ -50,17 +50,39 @@ export default function ReportUpload({ onResult }) {
       setStatusStep('Extracting medical document text...');
       const formData = new FormData();
       formData.append('file', file);
+      
+      // The backend expects a patient_id in the form data
+      // We can grab it from local storage, or pass a default mock for now if not found
+      let patientId = '1';
+      try {
+        const userStr = localStorage.getItem('medtwin_auth_user');
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          // Assuming ID format like PT-101
+          if (u.id && u.id.startsWith('PT-')) {
+            patientId = u.id.split('-')[1];
+          }
+        }
+      } catch (e) {}
+      
+      formData.append('patient_id', patientId);
 
       setStatusStep('Processing AI analysis...');
 
-      const response = await axios.post('http://localhost:8000/analyze', formData, {
+      const response = await axios.post('http://localhost:8000/api/reports/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setStatusStep('Analysis complete.');
       await new Promise(r => setTimeout(r, 400));
 
-      onResult(response.data);
+      // The new endpoint returns the result inside 'prediction.details'
+      // If we need to support both for a bit, check which format it is:
+      if (response.data && response.data.prediction && response.data.prediction.details) {
+         onResult(response.data.prediction.details);
+      } else {
+         onResult(response.data);
+      }
       setLoading(false);
 
     } catch (err) {

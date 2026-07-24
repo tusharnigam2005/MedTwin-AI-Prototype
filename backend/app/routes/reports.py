@@ -56,7 +56,7 @@ async def upload_report(
         risk_score=ai_result.get("overall_risk_score", 65.0),
         confidence=ai_result.get("overall_confidence", 0.90),
         agent_source="LangGraph-Orchestrator",
-        details={"extracted_labs": ai_result.get("extracted_lab_values", {})}
+        details=ai_result  # Store the full AI analysis JSON
     )
     db.add(prediction)
     db.commit()
@@ -103,7 +103,7 @@ async def upload_report(
     return {
         "message": "Report uploaded, OCR processed, LangGraph evaluated, and hashed to Polygon",
         "report_id": report.id,
-        "prediction": {"risk_score": prediction.risk_score, "confidence": prediction.confidence},
+        "prediction": {"risk_score": prediction.risk_score, "confidence": prediction.confidence, "details": prediction.details},
         "recommendation": recommendation.action,
         "blockchain_verification": bc_tx
     }

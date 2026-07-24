@@ -6,16 +6,39 @@ import AgentResults from '../components/AgentResults';
 import { useAuth } from '../context/AuthContext';
 import {
   HeartPulse, Upload, RotateCcw, Activity, TrendingUp,
-  FileText, Shield, CheckCircle2, Clock
+  FileText, Shield, CheckCircle2, Clock, Loader2
 } from 'lucide-react';
+import axios from 'axios';
 
 export default function PatientDashboard() {
   const { user } = useAuth();
   const location = useLocation();
   const [result, setResult] = useState(null);
+  const [loadingInitial, setLoadingInitial] = useState(true);
   
   const currentPath = location.pathname.replace(/\/$/, '');
   const isDashboard = currentPath === '/patient';
+
+  // Extract numeric patient ID from 'PT-101' format
+  const numericPatientId = user?.id ? user.id.replace(/\D/g, '') : '1';
+
+  React.useEffect(() => {
+    const fetchLatestPrediction = async () => {
+      try {
+        setLoadingInitial(true);
+        const res = await axios.get(`http://localhost:8000/api/prediction/${numericPatientId}`);
+        // If the backend returns a prediction with details, use it
+        if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
+          setResult(res.data.details);
+        }
+      } catch (err) {
+        console.error("No previous predictions found or error fetching:", err);
+      } finally {
+        setLoadingInitial(false);
+      }
+    };
+    fetchLatestPrediction();
+  }, [numericPatientId]);
 
   const triageLevel = result?.emergency_analysis?.triage_level || 'routine';
   const doctorApproved = result ? false : true;
@@ -109,7 +132,12 @@ export default function PatientDashboard() {
             </div>
 
             {/* Upload Medical Report Section */}
-            {!result ? (
+            {loadingInitial ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-sky-500 mb-4" />
+                <h3 className="text-slate-900 font-bold text-sm">Loading Twin Data...</h3>
+              </div>
+            ) : !result ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
                 <div className="border-b border-slate-100 pb-4">
                   <h2 className="text-lg font-bold text-slate-900">

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # ──────────────────────────────────────────────────────────────────────────
 
 from app.db.database import engine, Base
-from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor, patient
+from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor, patient, admin
 
 from ai.document_processor import process_document
 from ai.graph import medtwin_graph
@@ -48,6 +48,7 @@ app.include_router(history.router, prefix="/api/history", tags=["Audit History"]
 app.include_router(blockchain.router, prefix="/api/blockchain", tags=["Blockchain Verification"])
 app.include_router(doctor.router, prefix="/api/doctor", tags=["Doctor Portal & Approvals"])
 app.include_router(patient.router, prefix="/api/patient", tags=["Patient Profile & Onboarding"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin System Monitor"])
 
 @app.get("/", tags=["Health Check"])
 def health_check():
