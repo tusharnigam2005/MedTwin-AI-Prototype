@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import LandingPage from './pages/LandingPage';
+import LandingAuth from './pages/LandingAuth';
 import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -22,7 +22,7 @@ export default function App() {
     <Routes>
       <Route
         path="/"
-        element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'admin' ? '/admin' : '/patient'} replace /> : <LandingPage />}
+        element={user ? <Navigate to={user.role === 'doctor' ? '/doctor' : user.role === 'admin' ? '/admin' : '/patient'} replace /> : <LandingAuth />}
       />
       <Route
         path="/patient"

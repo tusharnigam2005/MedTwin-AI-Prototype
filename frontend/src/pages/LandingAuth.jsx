@@ -16,7 +16,12 @@ import {
   Sparkles
 } from 'lucide-react';
 
-export default function LandingAuth({ onAuthSuccess }) {
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+export default function LandingAuth() {
+  const { login: setGlobalUser } = useAuth();
+  const navigate = useNavigate();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [role, setRole] = useState('patient'); // 'patient', 'doctor', or 'admin'
   const [formData, setFormData] = useState({
@@ -85,13 +90,13 @@ export default function LandingAuth({ onAuthSuccess }) {
         const data = await res.json();
         localStorage.setItem('medtwin_token', data.access_token);
         localStorage.setItem('medtwin_jwt', data.access_token);
-        onAuthSuccess(data.role || role, {
-          name: formData.email.split('@')[0].toUpperCase(),
-          email: formData.email,
-          role: data.role || role,
-          token: data.access_token,
-          user_id: data.user_id
-        });
+        
+        const finalRole = data.role || role;
+        setGlobalUser(formData.email.split('@')[0].toUpperCase(), finalRole);
+        
+        if (finalRole === 'doctor') navigate('/doctor');
+        else if (finalRole === 'admin') navigate('/admin');
+        else navigate('/patient');
       } else {
         // Create Account (Signup) using real FastAPI endpoint
         const signupPayload = {
@@ -128,13 +133,12 @@ export default function LandingAuth({ onAuthSuccess }) {
           const data = await loginRes.json();
           localStorage.setItem('medtwin_token', data.access_token);
           localStorage.setItem('medtwin_jwt', data.access_token);
-          onAuthSuccess(role, {
-            name: formData.fullName || formData.email.split('@')[0],
-            email: formData.email,
-            role: role,
-            token: data.access_token,
-            user_id: data.user_id
-          });
+          
+          setGlobalUser(formData.fullName || formData.email.split('@')[0], role);
+          
+          if (role === 'doctor') navigate('/doctor');
+          else if (role === 'admin') navigate('/admin');
+          else navigate('/patient');
         } else {
           setIsLoginMode(true);
           setError('Account created! Please login now.');
@@ -147,13 +151,11 @@ export default function LandingAuth({ onAuthSuccess }) {
         setError('⚡ Local Backend Offline — Auto-entering Offline Demo Mode...');
         setTimeout(() => {
           const fallbackName = formData.fullName || (formData.email ? formData.email.split('@')[0] : 'Tushar Nigam');
-          onAuthSuccess(role, {
-            name: fallbackName.toUpperCase(),
-            email: formData.email || 'tushar@medtwin.ai',
-            role: role,
-            token: 'offline-demo-jwt-token',
-            user_id: 999
-          });
+          setGlobalUser(fallbackName.toUpperCase(), role);
+          
+          if (role === 'doctor') navigate('/doctor');
+          else if (role === 'admin') navigate('/admin');
+          else navigate('/patient');
         }, 1000);
         return;
       }
@@ -188,13 +190,13 @@ export default function LandingAuth({ onAuthSuccess }) {
         const data = await res.json();
         localStorage.setItem('medtwin_token', data.access_token);
         localStorage.setItem('medtwin_jwt', data.access_token);
-        onAuthSuccess(demoRole, {
-          name: target.name,
-          email: target.email,
-          role: demoRole,
-          token: data.access_token,
-          user_id: data.user_id
-        });
+        
+        setGlobalUser(target.name, demoRole);
+        
+        if (demoRole === 'doctor') navigate('/doctor');
+        else if (demoRole === 'admin') navigate('/admin');
+        else navigate('/patient');
+        
         setLoading(false);
         return;
       }
@@ -203,7 +205,11 @@ export default function LandingAuth({ onAuthSuccess }) {
     }
 
     // Seamless fallback if backend not running
-    onAuthSuccess(demoRole, { name: target.name, email: target.email, role: demoRole });
+    setGlobalUser(target.name, demoRole);
+    if (demoRole === 'doctor') navigate('/doctor');
+    else if (demoRole === 'admin') navigate('/admin');
+    else navigate('/patient');
+    
     setLoading(false);
   };
 
