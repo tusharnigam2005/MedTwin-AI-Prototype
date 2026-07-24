@@ -1,102 +1,166 @@
-import React, { useState } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { reportsAPI } from '../services/api';
+import React, { useState, useRef } from 'react';
+import { Upload, FileText, Image, X, Loader2, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
 
-export default function ReportUpload({ patientId = 1, onUploadSuccess }) {
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+
+export default function ReportUpload({ onResult }) {
   const [file, setFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [statusStep, setStatusStep] = useState('');
+  const [error, setError] = useState('');
+  const inputRef = useRef();
 
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected) {
-      if (selected.size > 10 * 1024 * 1024) {
-        setError("File size exceeds 10MB limit.");
-        return;
-      }
-      setFile(selected);
-      setError(null);
+  const validateFile = (f) => {
+    if (!ACCEPTED_TYPES.includes(f.type) && !f.name.endsWith('.pdf') && !f.name.endsWith('.png') && !f.name.endsWith('.jpg') && !f.name.endsWith('.jpeg')) {
+      setError('Please select a supported file format: PDF, JPG, or PNG.');
+      return false;
+    }
+    if (f.size > 25 * 1024 * 1024) {
+      setError('File size exceeds 25 MB limit.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSelect = (f) => {
+    setError('');
+    if (validateFile(f)) {
+      setFile(f);
     }
   };
 
-  const handleUpload = async () => {
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const f = e.dataTransfer.files[0];
+    if (f) handleSelect(f);
+  };
+
+  const processReport = async () => {
     if (!file) return;
     setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setError('');
+
     try {
-      const response = await reportsAPI.upload(patientId, file);
-      setSuccess("Report successfully OCR processed, evaluated by LangGraph AI, and verified on Polygon Blockchain!");
-      if (onUploadSuccess) onUploadSuccess(response.data);
-    } catch (err) {
-      console.error(err);
-      // Fallback simulation if backend isn't running
-      setTimeout(() => {
-        setSuccess("Report simulated: Fasting Blood Sugar 135 mg/dL extracted. LangGraph risk evaluated (68.5/100). Hashed on Polygon Amoy (Tx: 0x8f...3a1)");
-        if (onUploadSuccess) onUploadSuccess();
-      }, 1500);
-    } finally {
+      setStatusStep('Uploading report...');
+      await new Promise(r => setTimeout(r, 600));
+
+      setStatusStep('Extracting medical document text...');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      setStatusStep('Processing AI analysis...');
+
+      const response = await axios.post('http://localhost:8000/analyze', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setStatusStep('Analysis complete.');
+      await new Promise(r => setTimeout(r, 400));
+
+      onResult(response.data);
       setLoading(false);
+
+    } catch (err) {
+      setLoading(false);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8000.');
+      } else {
+        setError(err.response?.data?.detail || 'Failed to process report. Please verify the file and try again.');
+      }
     }
   };
 
   return (
-    <div className="glass-card border-dashed border-2 border-navy-600 hover:border-teal-500/50 transition-all">
-      <div className="flex flex-col items-center justify-center py-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-4">
-          <Upload className="w-7 h-7" />
-        </div>
-        <h3 className="text-lg font-bold text-white">Upload Medical Report / Lab Prescription</h3>
-        <p className="text-sm text-slate-400 mt-1 max-w-md">
-          Drag & drop PDF, prescription scan, or lab test image. Our self-hosted PaddleOCR & Tesseract engine will parse structured medical data without leaving our encrypted infrastructure (Slide 14 & 15).
-        </p>
-
+    <div className="space-y-4">
+      {/* Upload Dropzone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => !file && !loading && inputRef.current?.click()}
+        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+          dragging ? 'border-sky-500 bg-sky-50' :
+          file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
+          'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
+        }`}
+      >
         <input
+          ref={inputRef}
           type="file"
-          onChange={handleFileChange}
-          accept=".pdf,.png,.jpg,.jpeg"
+          accept=".pdf,.jpg,.jpeg,.png"
           className="hidden"
-          id="report-file-input"
+          onChange={(e) => e.target.files[0] && handleSelect(e.target.files[0])}
         />
-        <label
-          htmlFor="report-file-input"
-          className="mt-5 btn-secondary cursor-pointer text-sm"
-        >
-          <FileText className="w-4 h-4 text-teal-400" />
-          {file ? file.name : "Select Report File"}
-        </label>
 
-        {file && (
-          <button
-            onClick={handleUpload}
-            disabled={loading}
-            className="mt-4 btn-primary w-full max-w-xs"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Processing AI Pipeline...
-              </>
-            ) : (
-              "Submit for AI & Blockchain Verification"
+        {file ? (
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600">
+                {file.type === 'application/pdf' ? <FileText className="w-5 h-5" /> : <Image className="w-5 h-5" />}
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-slate-800 text-sm">{file.name}</p>
+                <p className="text-slate-500 text-xs">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+              </div>
+            </div>
+
+            {!loading && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setFile(null); setError(''); }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
-          </button>
-        )}
-
-        {error && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
           </div>
-        )}
-
-        {success && (
-          <div className="mt-4 p-3 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex items-center gap-2 text-left">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-teal-400" />
-            <span>{success}</span>
+        ) : (
+          <div className="py-4 space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-2">
+              <Upload className="w-6 h-6" />
+            </div>
+            <p className="text-slate-800 font-semibold text-sm">
+              Drag & Drop Medical Report / Lab Prescription
+            </p>
+            <p className="text-slate-500 text-xs">
+              Supports PDF, JPG, JPEG, PNG (max 25 MB)
+            </p>
           </div>
         )}
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-xs flex items-center gap-2">
+          <span>⚠</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Loading Status */}
+      {loading && (
+        <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-2 text-xs text-sky-800">
+          <div className="flex items-center gap-2 font-semibold">
+            <Loader2 className="w-4 h-4 animate-spin text-sky-600" />
+            <span>{statusStep}</span>
+          </div>
+          <div className="w-full bg-sky-200 rounded-full h-1.5 overflow-hidden">
+            <div className="h-full bg-sky-500 rounded-full w-2/3 animate-pulse" />
+          </div>
+        </div>
+      )}
+
+      {/* Submit Button */}
+      {file && !loading && (
+        <button
+          onClick={processReport}
+          className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2"
+        >
+          <span>Run MedTwin AI Analysis</span>
+        </button>
+      )}
     </div>
   );
 }
