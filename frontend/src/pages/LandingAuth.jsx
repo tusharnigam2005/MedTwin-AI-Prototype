@@ -315,7 +315,7 @@ export default function LandingAuth() {
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                   Select Your Portal Role
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setRole('patient')}
@@ -339,6 +339,18 @@ export default function LandingAuth() {
                   >
                     <Stethoscope className="w-4 h-4 mb-1" />
                     <span>Doctor</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('admin')}
+                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                      role === 'admin'
+                        ? 'bg-teal-500/20 border-teal-500 text-teal-300'
+                        : 'bg-navy-900/50 border-navy-700 text-slate-400 hover:border-navy-600'
+                    }`}
+                  >
+                    <ShieldCheck className="w-4 h-4 mb-1" />
+                    <span>Admin</span>
                   </button>
                 </div>
               </div>

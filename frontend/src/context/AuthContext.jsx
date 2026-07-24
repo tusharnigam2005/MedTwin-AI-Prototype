@@ -6,9 +6,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('medtwin_auth_user');
-      return saved ? JSON.parse(saved) : { name: 'Aarav Sharma', role: 'patient', id: 'PT-101' };
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return { name: 'Aarav Sharma', role: 'patient', id: 'PT-101' };
+      return null;
     }
   });
 
