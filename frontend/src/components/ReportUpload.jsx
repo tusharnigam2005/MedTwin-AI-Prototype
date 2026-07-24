@@ -110,9 +110,10 @@ export default function ReportUpload({ onResult }) {
             {!loading && (
               <button
                 onClick={(e) => { e.stopPropagation(); setFile(null); setError(''); }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 font-semibold text-xs border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
+                <span>Change File</span>
               </button>
             )}
           </div>
