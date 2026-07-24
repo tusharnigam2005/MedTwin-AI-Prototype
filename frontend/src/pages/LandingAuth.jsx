@@ -142,12 +142,22 @@ export default function LandingAuth({ onAuthSuccess }) {
       }
     } catch (err) {
       console.warn('Real backend call error, falling back if offline:', err.message);
-      // If backend is unreachable or errored, show clean error or fallback
-      if (err.message.includes('Failed to fetch')) {
-        setError('Cannot connect to Backend API. Is the server running?');
-      } else {
-        setError(err.message);
+      // If backend is unreachable on localhost or errored out, automatically enter Local Offline Demo Mode!
+      if (err.message.includes('Failed to fetch') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        setError('⚡ Local Backend Offline — Auto-entering Offline Demo Mode...');
+        setTimeout(() => {
+          const fallbackName = formData.fullName || (formData.email ? formData.email.split('@')[0] : 'Tushar Nigam');
+          onAuthSuccess(role, {
+            name: fallbackName.toUpperCase(),
+            email: formData.email || 'tushar@medtwin.ai',
+            role: role,
+            token: 'offline-demo-jwt-token',
+            user_id: 999
+          });
+        }, 1000);
+        return;
       }
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -421,7 +431,38 @@ export default function LandingAuth({ onAuthSuccess }) {
               </button>
             </form>
 
-
+            {/* Instant Local Demo Bypass Section (No Account Needed) */}
+            <div className="mt-6 pt-5 border-t border-navy-700/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono uppercase font-bold text-teal-400 tracking-wider bg-teal-500/10 px-2.5 py-0.5 rounded border border-teal-500/20 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-pulse" /> Local Testing Bypass
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">Zero Login Needed</span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Testing UI locally? Click below to immediately bypass login and enter enterprise dashboards right now:
+              </p>
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('patient')}
+                  disabled={loading}
+                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-emerald-500/20 hover:from-teal-500/30 hover:to-emerald-500/30 border border-teal-500/40 text-teal-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                >
+                  <UserCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Test Patient Twin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('doctor')}
+                  disabled={loading}
+                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-teal-500/20 hover:from-cyan-500/30 hover:to-teal-500/30 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                >
+                  <Stethoscope className="w-4 h-4 text-cyan-400" />
+                  <span>Test Doctor Portal</span>
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>

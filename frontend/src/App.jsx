@@ -5,22 +5,29 @@ import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import LandingAuth from './pages/LandingAuth';
+import OnboardingModal from './components/OnboardingModal';
 
 export default function App() {
   const [activeRole, setActiveRole] = useState('patient'); // 'patient', 'doctor', or 'admin'
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleAuthSuccess = (role, userData) => {
     setActiveRole(role);
     setUser(userData);
     setIsAuthenticated(true);
+    // If patient, trigger onboarding/verification flow before dashboard
+    if (role === 'patient') {
+      setShowOnboarding(true);
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    setShowOnboarding(false);
   };
 
   // If not authenticated, render the starting Landing & Auth Page
@@ -29,7 +36,12 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-navy-900 text-slate-100 relative">
+      {/* Pre-onboarding Modal Overlay for Patient Role */}
+      {showOnboarding && activeRole === 'patient' && (
+        <OnboardingModal user={user} onComplete={() => setShowOnboarding(false)} />
+      )}
+
       {/* Left Navigation Sidebar Drawer */}
       <Sidebar 
         activeRole={activeRole} 
