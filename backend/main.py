@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db.database import engine, Base
-from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor
+from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor, patient
 
 # Initialize Database tables automatically on startup
 Base.metadata.create_all(bind=engine)
@@ -31,6 +31,7 @@ app.include_router(recommendation.router, prefix="/api/recommendation", tags=["R
 app.include_router(history.router, prefix="/api/history", tags=["Audit History"])
 app.include_router(blockchain.router, prefix="/api/blockchain", tags=["Blockchain Verification"])
 app.include_router(doctor.router, prefix="/api/doctor", tags=["Doctor Portal & Approvals"])
+app.include_router(patient.router, prefix="/api/patient", tags=["Patient Profile & Onboarding"])
 
 @app.get("/", tags=["Health Check"])
 def health_check():
