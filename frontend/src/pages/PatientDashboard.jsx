@@ -14,6 +14,7 @@ export default function PatientDashboard() {
   const { user } = useAuth();
   const location = useLocation();
   const [result, setResult] = useState(null);
+  const [recStatus, setRecStatus] = useState("none");
   const [loadingInitial, setLoadingInitial] = useState(true);
   
   const currentPath = location.pathname.replace(/\/$/, '');
@@ -26,10 +27,11 @@ export default function PatientDashboard() {
     const fetchLatestPrediction = async () => {
       try {
         setLoadingInitial(true);
-        const res = await axios.get(`http://localhost:8000/api/prediction/${numericPatientId}`);
+        const res = await axios.get(`http://localhost:8001/api/prediction/${numericPatientId}`);
         // If the backend returns a prediction with details, use it
         if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
           setResult(res.data.details);
+          setRecStatus(res.data.recommendation_status || "none");
         }
       } catch (err) {
         console.error("No previous predictions found or error fetching:", err);
@@ -41,7 +43,10 @@ export default function PatientDashboard() {
   }, [numericPatientId]);
 
   const triageLevel = result?.emergency_analysis?.triage_level || 'routine';
-  const doctorApproved = result ? false : true;
+  const doctorApproved = recStatus === "approved";
+  const doctorRejected = recStatus === "rejected";
+  const doctorEscalated = recStatus === "escalated";
+  const doctorMoreData = recStatus === "more_data";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
@@ -123,10 +128,22 @@ export default function PatientDashboard() {
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 </div>
                 <p className="text-2xl font-bold text-slate-900">
-                  {result ? (doctorApproved ? 'Approved' : 'Pending Sign-Off') : 'Up to Date'}
+                  {!result ? 'Up to Date' : (
+                    doctorApproved ? 'Approved' : 
+                    doctorRejected ? 'Rejected' : 
+                    doctorEscalated ? 'Escalated' :
+                    doctorMoreData ? 'Data Requested' :
+                    'Pending Sign-Off'
+                  )}
                 </p>
                 <p className="text-slate-500 text-xs">
-                  {result ? 'Routed to doctor queue' : 'No pending reviews'}
+                  {!result ? 'No pending reviews' : (
+                    doctorApproved ? 'Verified by your doctor' : 
+                    doctorRejected ? 'Doctor flagged issues' : 
+                    doctorEscalated ? 'Doctor escalated case' :
+                    doctorMoreData ? 'Doctor requested data' :
+                    'Routed to doctor queue'
+                  )}
                 </p>
               </div>
             </div>

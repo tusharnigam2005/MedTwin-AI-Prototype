@@ -15,7 +15,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:8000/api/admin/stats');
+        const res = await axios.get('http://localhost:8001/api/admin/stats');
         setStats(res.data);
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to connect to backend.');

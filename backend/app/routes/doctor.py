@@ -61,7 +61,14 @@ def doctor_approve_record(
 
     # Record Doctor Sign-Off on Polygon Blockchain (Slide 26 doctorApproval)
     approval_hash = generate_sha256_hash({"rec_id": record_id, "status": payload.action_status, "doctor_email": current_doctor.email})
-    bc_tx = record_hash_on_polygon(record_id=f"approval_{record_id}", data_hash=approval_hash)
+    
+    # [DISABLED BLOCKCHAIN]
+    # bc_tx = record_hash_on_polygon(record_id=f"approval_{record_id}", data_hash=approval_hash)
+    bc_tx = {
+        "tx_hash": f"mock_tx_{approval_hash[:16]}",
+        "chain": "Polygon-Amoy-Mock",
+        "block_number": 999999
+    }
     
     tx_entry = BlockchainTx(
         record_id=f"approval_{record_id}",

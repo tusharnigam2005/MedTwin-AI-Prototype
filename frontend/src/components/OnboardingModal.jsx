@@ -34,7 +34,7 @@ export default function OnboardingModal({ user, onComplete }) {
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/patient/profile', {
+        const response = await fetch('http://localhost:8001/api/patient/profile', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -119,7 +119,7 @@ export default function OnboardingModal({ user, onComplete }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/patient/profile', {
+      const response = await fetch('http://localhost:8001/api/patient/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

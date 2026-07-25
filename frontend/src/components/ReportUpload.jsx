@@ -69,7 +69,7 @@ export default function ReportUpload({ onResult }) {
 
       setStatusStep('Processing AI analysis...');
 
-      const response = await axios.post('http://localhost:8000/api/reports/upload', formData, {
+      const response = await axios.post('http://localhost:8001/api/reports/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -88,7 +88,7 @@ export default function ReportUpload({ onResult }) {
     } catch (err) {
       setLoading(false);
       if (err.code === 'ERR_NETWORK') {
-        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8000.');
+        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8001.');
       } else {
         setError(err.response?.data?.detail || 'Failed to process report. Please verify the file and try again.');
       }

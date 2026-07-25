@@ -31,10 +31,10 @@ export default function LandingPage() {
   const getApiBaseUrl = () => {
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
       if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return `http://${window.location.hostname}:8000`;
+        return `http://${window.location.hostname}:8001`;
       }
     }
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
   };
 
   const handleSubmit = async (e) => {
@@ -75,7 +75,7 @@ export default function LandingPage() {
         localStorage.setItem('medtwin_token', data.access_token);
         
         const finalRole = data.role || selectedRole;
-        setGlobalUser(formData.email.split('@')[0].toUpperCase(), finalRole);
+        setGlobalUser(formData.email.split('@')[0].toUpperCase(), finalRole, data.user_id);
         
         if (finalRole === 'doctor') navigate('/doctor');
         else if (finalRole === 'admin') navigate('/admin');
@@ -110,7 +110,7 @@ export default function LandingPage() {
         if (loginRes.ok) {
           const data = await loginRes.json();
           localStorage.setItem('medtwin_token', data.access_token);
-          setGlobalUser(formData.fullName || formData.email.split('@')[0], selectedRole);
+          setGlobalUser(formData.fullName || formData.email.split('@')[0], selectedRole, data.user_id);
           if (selectedRole === 'doctor') navigate('/doctor');
           else if (selectedRole === 'admin') navigate('/admin');
           else navigate('/patient');
@@ -120,7 +120,7 @@ export default function LandingPage() {
         }
       }
     } catch (err) {
-      if (err.message.includes('Failed to fetch') || window.location.hostname === 'localhost') {
+      if (err.message.includes('Failed to fetch')) {
         setError('⚡ Local Backend Offline — Auto-entering Offline Demo Mode...');
         setTimeout(() => {
           const fallbackName = formData.fullName || formData.email.split('@')[0] || 'Tushar Nigam';

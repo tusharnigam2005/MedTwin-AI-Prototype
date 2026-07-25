@@ -17,9 +17,17 @@ async def upload_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    patient = None
+    if current_user.role == "patient" and current_user.patient_profile:
+        patient = current_user.patient_profile
+    else:
+        patient = db.query(Patient).filter(Patient.id == patient_id).first()
+        
     if not patient:
         raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    # Override patient_id with the actual resolved patient ID
+    patient_id = patient.id
 
     # Save uploaded report locally/simulated IPFS (Slide 14 & 15)
     os.makedirs("uploads", exist_ok=True)
@@ -47,7 +55,8 @@ async def upload_report(
         patient_id=patient.id,
         ocr_text=mock_ocr_text,
         medical_history=patient.medical_history or {},
-        vitals={"heart_rate": 74, "blood_pressure": "120/80"}
+        vitals={"heart_rate": 74, "blood_pressure": "120/80"},
+        patient_name=patient.user.email.split('@')[0].replace('.', ' ').title() if patient.user else "Demo Patient"
     )
 
     # 3. Store Prediction in DB
@@ -80,7 +89,14 @@ async def upload_report(
     # 5. Blockchain SHA-256 Hash Registration (Slide 25)
     record_payload = {"report_id": report.id, "prediction_id": prediction.id, "ocr_hash": generate_sha256_hash(mock_ocr_text)}
     sha_hash = generate_sha256_hash(record_payload)
-    bc_tx = record_hash_on_polygon(record_id=f"report_{report.id}", data_hash=sha_hash)
+    
+    # [DISABLED BLOCKCHAIN]
+    # bc_tx = record_hash_on_polygon(record_id=f"report_{report.id}", data_hash=sha_hash)
+    bc_tx = {
+        "tx_hash": f"mock_tx_{sha_hash[:16]}",
+        "chain": "Polygon-Amoy-Mock",
+        "block_number": 999999
+    }
 
     tx_entry = BlockchainTx(
         record_id=f"report_{report.id}",
