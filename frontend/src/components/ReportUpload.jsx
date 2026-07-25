@@ -70,8 +70,12 @@ export default function ReportUpload({ onResult }) {
       setStatusStep('Processing AI analysis...');
 
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const token = localStorage.getItem('medtwin_jwt');
       const response = await axios.post(`${baseUrl}/api/reports/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       setStatusStep('Analysis complete.');
