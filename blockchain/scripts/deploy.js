@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const fs = require("fs");
 
 async function main() {
   console.log("Deploying MedTwinTrust contract to network:", hre.network.name);
@@ -10,6 +11,7 @@ async function main() {
   const address = await contract.getAddress();
 
   console.log(`✅ MedTwinTrust deployed successfully at address: ${address}`);
+  fs.writeFileSync(".contract_address", address);
   console.log("Ensure you set this address in your backend and frontend environment configurations!");
 }
 

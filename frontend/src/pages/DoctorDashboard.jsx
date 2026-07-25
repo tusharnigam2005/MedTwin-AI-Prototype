@@ -21,7 +21,8 @@ export default function DoctorDashboard() {
   const fetchQueue = async () => {
     try {
       setLoadingQueue(true);
-      const res = await axios.get('http://localhost:8001/api/doctor/queue');
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const res = await axios.get(`${baseUrl}/api/doctor/queue`);
       setQueue(res.data);
     } catch (err) {
       console.error('Failed to fetch doctor queue', err);
@@ -43,7 +44,8 @@ export default function DoctorDashboard() {
     if (!selectedPatient) return;
     try {
       setActionLoading(true);
-      await axios.post(`http://localhost:8001/api/doctor/approve/${selectedPatient.id}`, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      await axios.post(`${baseUrl}/api/doctor/approve/${selectedPatient.id}`, {
         action_status: status
       });
       setReviewDecision(status);

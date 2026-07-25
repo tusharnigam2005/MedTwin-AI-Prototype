@@ -27,7 +27,8 @@ export default function PatientDashboard() {
     const fetchLatestPrediction = async () => {
       try {
         setLoadingInitial(true);
-        const res = await axios.get(`http://localhost:8001/api/prediction/${numericPatientId}`);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+        const res = await axios.get(`${baseUrl}/api/prediction/${numericPatientId}`);
         // If the backend returns a prediction with details, use it
         if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
           setResult(res.data.details);

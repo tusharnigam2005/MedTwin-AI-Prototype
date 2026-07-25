@@ -34,7 +34,8 @@ export default function OnboardingModal({ user, onComplete }) {
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:8001/api/patient/profile', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+        const response = await fetch(`${baseUrl}/api/patient/profile`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -119,7 +120,8 @@ export default function OnboardingModal({ user, onComplete }) {
     };
 
     try {
-      const response = await fetch('http://localhost:8001/api/patient/profile', {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const response = await fetch(`${baseUrl}/api/patient/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
