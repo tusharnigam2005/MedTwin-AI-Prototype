@@ -69,7 +69,8 @@ export default function ReportUpload({ onResult }) {
 
       setStatusStep('Processing AI analysis...');
 
-      const response = await axios.post('http://localhost:8001/api/reports/upload', formData, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const response = await axios.post(`${baseUrl}/api/reports/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
