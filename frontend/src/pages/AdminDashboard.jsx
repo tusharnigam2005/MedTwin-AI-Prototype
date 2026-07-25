@@ -54,11 +54,10 @@ export default function AdminDashboard() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                tab === id
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${tab === id
                   ? 'bg-sky-500 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-sky-50 hover:text-sky-600'
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" />
               <span>{label}</span>
@@ -84,7 +83,7 @@ export default function AdminDashboard() {
                   <p className="text-slate-500 text-xs font-bold uppercase">Total Users</p>
                   <p className="text-3xl font-extrabold text-slate-900">{stats.total_users}</p>
                 </div>
-                
+
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
                   <p className="text-slate-500 text-xs font-bold uppercase">Active Doctors</p>
                   <p className="text-3xl font-extrabold text-slate-900">{stats.active_doctors}</p>

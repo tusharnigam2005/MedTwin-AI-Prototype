@@ -11,14 +11,14 @@ export default function LandingPage() {
 
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [selectedRole, setSelectedRole] = useState('patient');
-  
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,12 @@ export default function LandingPage() {
   };
 
   const getApiBaseUrl = () => {
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return `http://${window.location.hostname}:8001`;
+      }
+    }
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
   };
 
   const handleSubmit = async (e) => {
@@ -52,7 +57,7 @@ export default function LandingPage() {
     try {
       const BASE_URL = getApiBaseUrl();
       const API_BASE = `${BASE_URL}/api/auth`;
-      
+
       if (isLoginMode) {
         const bodyParams = new URLSearchParams();
         bodyParams.append('username', formData.email);
@@ -68,10 +73,10 @@ export default function LandingPage() {
 
         const data = await res.json();
         localStorage.setItem('medtwin_token', data.access_token);
-        
+
         const finalRole = data.role || selectedRole;
         setGlobalUser(formData.email.split('@')[0].toUpperCase(), finalRole, data.user_id);
-        
+
         if (finalRole === 'doctor') navigate('/doctor');
         else if (finalRole === 'admin') navigate('/admin');
         else navigate('/patient');
@@ -197,13 +202,13 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex bg-slate-100 p-1 rounded-lg">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => { setIsLoginMode(true); setError(''); }}
                   className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${isLoginMode ? 'bg-white shadow-sm text-sky-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >Login</button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => { setIsLoginMode(false); setError(''); }}
                   className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${!isLoginMode ? 'bg-white shadow-sm text-sky-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >Sign Up</button>
@@ -221,16 +226,14 @@ export default function LandingPage() {
                 {/* Patient Role Card */}
                 <div
                   onClick={() => setSelectedRole('patient')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedRole === 'patient'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'patient'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                      selectedRole === 'patient' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${selectedRole === 'patient' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
+                      }`}>
                       <User className="w-5 h-5" />
                     </div>
                     <div className="text-left">
@@ -238,9 +241,8 @@ export default function LandingPage() {
                       <p className="text-slate-500 text-xs">View digital twin, reports & health analysis</p>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedRole === 'patient' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedRole === 'patient' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
+                    }`}>
                     {selectedRole === 'patient' && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
                 </div>
@@ -248,16 +250,14 @@ export default function LandingPage() {
                 {/* Doctor Role Card */}
                 <div
                   onClick={() => setSelectedRole('doctor')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedRole === 'doctor'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'doctor'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                      selectedRole === 'doctor' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${selectedRole === 'doctor' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
+                      }`}>
                       <Stethoscope className="w-5 h-5" />
                     </div>
                     <div className="text-left">
@@ -265,9 +265,8 @@ export default function LandingPage() {
                       <p className="text-slate-500 text-xs">Review patient queue, approve & escalate cases</p>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedRole === 'doctor' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedRole === 'doctor' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
+                    }`}>
                     {selectedRole === 'doctor' && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
                 </div>
@@ -275,16 +274,14 @@ export default function LandingPage() {
                 {/* Admin Role Card */}
                 <div
                   onClick={() => setSelectedRole('admin')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedRole === 'admin'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'admin'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                      selectedRole === 'admin' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${selectedRole === 'admin' ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-600'
+                      }`}>
                       <Shield className="w-5 h-5" />
                     </div>
                     <div className="text-left">
@@ -292,9 +289,8 @@ export default function LandingPage() {
                       <p className="text-slate-500 text-xs">System access — users, logs & monitoring</p>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedRole === 'admin' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedRole === 'admin' ? 'border-sky-500 bg-sky-500' : 'border-slate-300'
+                    }`}>
                     {selectedRole === 'admin' && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
                 </div>
@@ -319,7 +315,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 )}
-                
+
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1">Email / Username</label>
                   <div className="relative">
@@ -370,7 +366,7 @@ export default function LandingPage() {
                   </div>
                 )}
               </div>
-              
+
               {error && (
                 <div className="p-3 rounded-xl bg-rose-50 text-rose-600 text-xs font-bold border border-rose-200">
                   {error}

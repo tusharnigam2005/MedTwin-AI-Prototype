@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
 
-export default function ReportUpload({ onResult }) {
+export default function ReportUpload({ onResult, onBlockchainData }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,7 +50,7 @@ export default function ReportUpload({ onResult }) {
       setStatusStep('Extracting medical document text...');
       const formData = new FormData();
       formData.append('file', file);
-      
+
       // The backend expects a patient_id in the form data
       // We can grab it from local storage, or pass a default mock for now if not found
       let patientId = '1';
@@ -63,19 +63,15 @@ export default function ReportUpload({ onResult }) {
             patientId = u.id.split('-')[1];
           }
         }
-      } catch (e) {}
-      
+      } catch (e) { }
+
       formData.append('patient_id', patientId);
 
       setStatusStep('Processing AI analysis...');
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
-      const token = localStorage.getItem('medtwin_jwt');
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       const response = await axios.post(`${baseUrl}/api/reports/upload`, formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setStatusStep('Analysis complete.');
@@ -84,9 +80,12 @@ export default function ReportUpload({ onResult }) {
       // The new endpoint returns the result inside 'prediction.details'
       // If we need to support both for a bit, check which format it is:
       if (response.data && response.data.prediction && response.data.prediction.details) {
-         onResult(response.data.prediction.details);
+        onResult(response.data.prediction.details);
       } else {
-         onResult(response.data);
+        onResult(response.data);
+      }
+      if (onBlockchainData && response.data.report_id) {
+        onBlockchainData(response.data.report_id, response.data.blockchain_verification);
       }
       setLoading(false);
 
@@ -108,11 +107,10 @@ export default function ReportUpload({ onResult }) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => !file && !loading && inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-          dragging ? 'border-sky-500 bg-sky-50' :
-          file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
-          'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
-        }`}
+        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${dragging ? 'border-sky-500 bg-sky-50' :
+            file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
+              'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
+          }`}
       >
         <input
           ref={inputRef}

@@ -26,6 +26,18 @@ def get_latest_prediction(patient_id: int, db: Session = Depends(get_db), curren
     recommendation = db.query(Recommendation).filter(Recommendation.prediction_id == prediction.id).first()
     rec_status = recommendation.status if recommendation else "none"
 
+    # Fetch latest report and blockchain tx so the UI can populate the download button on load
+    from app.models.schema import MedicalReport, BlockchainTx
+    latest_report = db.query(MedicalReport).filter(MedicalReport.patient_id == resolved_patient_id).order_by(MedicalReport.uploaded_at.desc()).first()
+    
+    bc_verification = None
+    latest_report_id = None
+    if latest_report:
+        latest_report_id = latest_report.id
+        tx = db.query(BlockchainTx).filter(BlockchainTx.record_id == f"report_{latest_report.id}").first()
+        if tx:
+            bc_verification = {"tx_hash": tx.tx_hash, "status": "confirmed"}
+
     return {
         "prediction_id": prediction.id,
         "patient_id": prediction.patient_id,
@@ -34,5 +46,7 @@ def get_latest_prediction(patient_id: int, db: Session = Depends(get_db), curren
         "agent_source": prediction.agent_source,
         "details": prediction.details,
         "created_at": prediction.created_at,
-        "recommendation_status": rec_status
+        "recommendation_status": rec_status,
+        "latest_report_id": latest_report_id,
+        "blockchain_verification": bc_verification
     }
