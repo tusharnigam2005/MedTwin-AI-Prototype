@@ -13,6 +13,33 @@ class ApprovalRequest(BaseModel):
     action_status: str  # 'approved' or 'rejected'
     override_notes: str | None = None
 
+@router.get("/queue", summary="Get pending recommendations for Doctor review")
+def get_doctor_queue(
+    db: Session = Depends(get_db),
+    current_doctor: User = Depends(require_role("doctor"))
+):
+    # Fetch pending recommendations joined with prediction and patient
+    pending = db.query(Recommendation).filter(Recommendation.status == "pending_doctor_review").all()
+    
+    queue = []
+    for rec in pending:
+        prediction = rec.prediction
+        patient = prediction.patient
+        patient_user = patient.user
+        
+        queue.append({
+            "id": rec.id,
+            "patient_name": patient_user.email.split('@')[0].replace('.', ' ').title(),
+            "patient_id": patient.id,
+            "risk_score": prediction.risk_score,
+            "confidence": prediction.confidence,
+            "ai_recommendation": rec.action,
+            "created_at": rec.created_at,
+            "status": rec.status
+        })
+        
+    return queue
+
 @router.post("/approve/{record_id}", summary="Doctor approval action on a pending recommendation (Slide 33)")
 def doctor_approve_record(
     record_id: int, 
@@ -34,7 +61,14 @@ def doctor_approve_record(
 
     # Record Doctor Sign-Off on Polygon Blockchain (Slide 26 doctorApproval)
     approval_hash = generate_sha256_hash({"rec_id": record_id, "status": payload.action_status, "doctor_email": current_doctor.email})
-    bc_tx = record_hash_on_polygon(record_id=f"approval_{record_id}", data_hash=approval_hash)
+    
+    # [DISABLED BLOCKCHAIN]
+    # bc_tx = record_hash_on_polygon(record_id=f"approval_{record_id}", data_hash=approval_hash)
+    bc_tx = {
+        "tx_hash": f"mock_tx_{approval_hash[:16]}",
+        "chain": "Polygon-Amoy-Mock",
+        "block_number": 999999
+    }
     
     tx_entry = BlockchainTx(
         record_id=f"approval_{record_id}",
