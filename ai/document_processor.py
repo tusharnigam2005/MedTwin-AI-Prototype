@@ -1,12 +1,12 @@
 import os
 import fitz
-from paddleocr import PaddleOCR
-
-
-# Initialize OCR once
-ocr = PaddleOCR(
-    lang="en"
-)
+try:
+    from paddleocr import PaddleOCR
+    # Initialize OCR once
+    ocr = PaddleOCR(lang="en")
+except ImportError:
+    print("Warning: PaddleOCR is not installed. OCR fallback will be disabled.")
+    ocr = None
 
 
 def extract_text_with_ocr(image_path: str) -> str:
@@ -15,6 +15,9 @@ def extract_text_with_ocr(image_path: str) -> str:
     """
 
     try:
+        if ocr is None:
+            raise RuntimeError("PaddleOCR is not installed on this server due to disk space limits.")
+        
         result = ocr.predict(image_path)
 
         extracted_lines = []
