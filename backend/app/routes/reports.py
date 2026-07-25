@@ -36,27 +36,40 @@ async def upload_report(
     with open(file_path, "wb") as f:
         f.write(content)
 
-    # Simulated OCR extraction text or real PyTesseract/PaddleOCR output if needed
-    mock_ocr_text = f"Patient Blood Report: Fasting Blood Sugar 135 mg/dL. HbA1c 6.8%. Cholesterol 210 mg/dL. Uploaded file: {file.filename}"
+    # Process document text via PyMuPDF / OCR
+    try:
+        from ai.document_processor import process_document
+        extracted_text = process_document(file_path)
+    except Exception as ocr_err:
+        print(f"[Warning] OCR extraction error for {file_path}: {ocr_err}")
+        extracted_text = ""
+
+    ocr_text = extracted_text if (extracted_text and extracted_text.strip()) else f"Patient Medical Report. Uploaded file: {file.filename}"
+
+    # Calculate original file hash for tamper detection
+    original_file_hash = generate_sha256_hash(content)
 
     # 1. Store Report in DB
     report = MedicalReport(
         patient_id=patient.id,
         file_url=file_path,
-        ocr_text=mock_ocr_text,
-        structured_data={"Fasting Blood Sugar": "135 mg/dL", "HbA1c": "6.8%"}
+        ocr_text=ocr_text,
+        structured_data={
+            "filename": file.filename,
+            "original_file_hash": original_file_hash
+        }
     )
     db.add(report)
     db.commit()
     db.refresh(report)
 
-    # 2. Invoke LangGraph 5-Agent Pipeline (Slide 11, 21 & 23)
+    # 2. Invoke LangGraph 6-Agent Pipeline
     ai_result = invoke_langgraph_pipeline(
         patient_id=patient.id,
-        ocr_text=mock_ocr_text,
+        ocr_text=ocr_text,
         medical_history=patient.medical_history or {},
         vitals={"heart_rate": 74, "blood_pressure": "120/80"},
-        patient_name=patient.user.email.split('@')[0].replace('.', ' ').title() if patient.user else "Demo Patient"
+        patient_name=patient.user.email.split('@')[0].replace('.', ' ').title() if (patient.user and patient.user.email) else "Demo Patient"
     )
 
     # 3. Store Prediction in DB
@@ -87,7 +100,7 @@ async def upload_report(
     db.refresh(recommendation)
 
     # 5. Blockchain SHA-256 Hash Registration (Slide 25)
-    record_payload = {"report_id": report.id, "prediction_id": prediction.id, "ocr_hash": generate_sha256_hash(mock_ocr_text)}
+    record_payload = {"report_id": report.id, "prediction_id": prediction.id, "ocr_hash": generate_sha256_hash(ocr_text)}
     sha_hash = generate_sha256_hash(record_payload)
     
     # [DISABLED BLOCKCHAIN]

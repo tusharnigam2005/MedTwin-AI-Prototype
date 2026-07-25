@@ -55,6 +55,7 @@ class MedicalReport(Base):
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     file_url = Column(String(500), nullable=False)  # IPFS / S3 / Local path
+    file_hash = Column(String(255), nullable=True)  # SHA-256 hash of the actual file (Slide 25)
     ocr_text = Column(Text, nullable=True)
     structured_data = Column(JSON, default={})  # Normalized lab values (Slide 15/16)
     uploaded_at = Column(DateTime, default=datetime.utcnow)

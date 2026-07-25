@@ -1,12 +1,14 @@
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
 
-COPY package.json .
-RUN npm install
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/
 
-COPY . .
+# Copy built static files
+COPY dist /usr/share/nginx/html
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["nginx", "-g", "daemon off;"]

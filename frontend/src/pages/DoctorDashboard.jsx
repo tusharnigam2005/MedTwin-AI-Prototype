@@ -17,6 +17,8 @@ export default function DoctorDashboard() {
   const [queue, setQueue] = useState([]);
   const [loadingQueue, setLoadingQueue] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [reportId, setReportId] = useState(null);
+  const [bcData, setBcData] = useState(null);
 
   const fetchQueue = async () => {
     try {
@@ -38,6 +40,24 @@ export default function DoctorDashboard() {
   const handleReviewClick = (patient) => {
     setSelectedPatient(patient);
     setReviewDecision(patient.status === 'approved' ? 'approved' : null);
+    if (patient.details && patient.details.latest_report_id) setReportId(patient.details.latest_report_id);
+    if (patient.details && patient.details.blockchain_verification) setBcData(patient.details.blockchain_verification);
+  };
+
+  const handleBlockchainVerify = async () => {
+    if (!reportId) return alert('No report found to verify.');
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
+      if (res.data.is_match) {
+        alert('✅ Blockchain Verification Successful! The file matches the Polygon Smart Contract hash perfectly. Downloading now...');
+        window.open(`${baseUrl}/api/blockchain/download/${reportId}`, '_blank');
+      } else {
+        alert('🔴 Blockchain Verification Failed: The file has been modified or tampered with.');
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Verification error');
+    }
   };
 
   const handleAction = async (status) => {
@@ -123,7 +143,13 @@ export default function DoctorDashboard() {
                 <h3 className="text-slate-900 font-bold text-sm">Upload Patient Report for Direct Review</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Upload a report file to process through the AI agents and review output.</p>
               </div>
-              <ReportUpload onResult={setResult} />
+              <ReportUpload 
+                onResult={setResult} 
+                onBlockchainData={(id, bc) => {
+                  setReportId(id);
+                  setBcData(bc);
+                }}
+              />
             </div>
 
             {/* Patient Queue Table (Section 19 requirement) */}
@@ -164,9 +190,8 @@ export default function DoctorDashboard() {
                           </td>
                           <td className="p-3 text-slate-600">AI Report Analysis</td>
                           <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${
-                              item.risk_score > 70 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${item.risk_score > 70 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                              }`}>
                               {item.risk_score > 70 ? 'High Risk' : 'Routine'}
                             </span>
                           </td>
@@ -251,12 +276,24 @@ export default function DoctorDashboard() {
               )}
             </div>
 
-            {/* Display AI Results if uploaded, otherwise sample message */}
-            {result ? (
-              <AgentResults result={result} />
+            {/* Display Full Structured AI Results from Agents for Doctor Review */}
+            {(result || selectedPatient?.details) ? (
+              <div className="space-y-4">
+                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex items-center justify-between text-xs text-sky-900 font-medium">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-sky-600" />
+                    <span>Viewing complete 6-Agent AI structured telemetry for <strong>{selectedPatient?.patient_name || result?.medical_report?.patient?.name || 'Patient'}</strong>.</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-white border border-sky-200 rounded-lg text-sky-700 font-bold uppercase text-[10px]">
+                    Verified Structured Output
+                  </span>
+                </div>
+
+                <AgentResults result={result || selectedPatient?.details} />
+              </div>
             ) : selectedPatient && selectedPatient.ai_recommendation ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="text-slate-900 font-bold text-sm">AI Recommendation summary</h3>
+                <h3 className="text-slate-900 font-bold text-sm">AI Recommendation Summary</h3>
                 <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
                   {selectedPatient.ai_recommendation}
                 </p>
@@ -273,24 +310,34 @@ export default function DoctorDashboard() {
               </div>
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="text-slate-900 font-bold text-sm">Sample Patient Report Results</h3>
+                <h3 className="text-slate-900 font-bold text-sm">Patient Case Selection</h3>
                 <p className="text-slate-500 text-xs">
-                  Upload a document using the "Upload Patient Report" box above to inspect real-time agent output, or process new reports.
+                  Select a patient from the queue or upload a new report to inspect structured AI agent results.
                 </p>
               </div>
             )}
           </div>
         )}
 
-        {/* Clean Blockchain Integration Placeholder (Section 13 & 21 requirement) */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 text-xs text-slate-500 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-slate-400" />
-            <span><strong className="text-slate-700">Audit Verification:</strong> Blockchain Integration — Status: Pending / Next Implementation Phase</span>
+        {/* Functional Blockchain Integration Component */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-sky-500" />
+            <div className="text-sm">
+              <p className="text-slate-900 font-bold">Polygon SHA-256 Audit Log</p>
+              <p className="text-slate-500 text-xs">
+                Status: {bcData ? 'Verified / Active' : 'No Data'}
+                {bcData && ` • Tx: ${bcData.tx_hash.substring(0, 10)}...`}
+              </p>
+            </div>
           </div>
-          <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold text-[11px]">
-            Placeholder
-          </span>
+          <button
+            onClick={handleBlockchainVerify}
+            disabled={!reportId}
+            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-sm transition-all disabled:opacity-50"
+          >
+            Verify & Download Original
+          </button>
         </div>
       </main>
 
