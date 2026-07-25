@@ -1,14 +1,14 @@
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Install the lightweight static server
-RUN npm install -g serve
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/
 
-# We already built the optimized dist folder locally, so just copy it in!
-COPY dist ./dist
+# Copy built static files
+COPY dist /usr/share/nginx/html
 
 EXPOSE 5173
 
-# Serve it perfectly in production mode
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["nginx", "-g", "daemon off;"]
