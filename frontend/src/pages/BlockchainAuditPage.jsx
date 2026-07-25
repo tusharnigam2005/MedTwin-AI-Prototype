@@ -87,7 +87,7 @@ export default function BlockchainAuditPage() {
         blockNumber: '54,291,084',
         timestamp: new Date().toISOString(),
         smartContract: '0x71C765...MedTwinTrust.sol',
-        chain: 'Polygon Amoy Testnet (Chain ID 80002)',
+        chain: 'Polygon Amoy Testnet (Chain ID 80012)',
       });
     }, 800);
   };
@@ -123,7 +123,7 @@ export default function BlockchainAuditPage() {
                 </span>
               </div>
               <p className="text-white font-mono font-bold text-xs">MedTwinTrust.sol</p>
-              <p className="text-slate-400 text-[11px] mt-0.5">Chain ID: 80002 · Amoy Testnet</p>
+              <p className="text-slate-400 text-[11px] mt-0.5">Chain ID: 80012 · Amoy Testnet</p>
             </div>
           </div>
         </div>

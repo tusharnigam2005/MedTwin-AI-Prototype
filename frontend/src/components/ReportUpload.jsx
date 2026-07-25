@@ -51,22 +51,45 @@ export default function ReportUpload({ onResult }) {
       const formData = new FormData();
       formData.append('file', file);
 
+      // The backend expects a patient_id in the form data
+      // We can grab it from local storage, or pass a default mock for now if not found
+      let patientId = '1';
+      try {
+        const userStr = localStorage.getItem('medtwin_auth_user');
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          // Assuming ID format like PT-101
+          if (u.id && u.id.startsWith('PT-')) {
+            patientId = u.id.split('-')[1];
+          }
+        }
+      } catch (e) { }
+
+      formData.append('patient_id', patientId);
+
       setStatusStep('Processing AI analysis...');
 
-      const response = await axios.post('http://localhost:8000/analyze', formData, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const response = await axios.post(`${baseUrl}/api/reports/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setStatusStep('Analysis complete.');
       await new Promise(r => setTimeout(r, 400));
 
-      onResult(response.data);
+      // The new endpoint returns the result inside 'prediction.details'
+      // If we need to support both for a bit, check which format it is:
+      if (response.data && response.data.prediction && response.data.prediction.details) {
+        onResult(response.data.prediction.details);
+      } else {
+        onResult(response.data);
+      }
       setLoading(false);
 
     } catch (err) {
       setLoading(false);
       if (err.code === 'ERR_NETWORK') {
-        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8000.');
+        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8001.');
       } else {
         setError(err.response?.data?.detail || 'Failed to process report. Please verify the file and try again.');
       }
@@ -81,11 +104,10 @@ export default function ReportUpload({ onResult }) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => !file && !loading && inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-          dragging ? 'border-sky-500 bg-sky-50' :
-          file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
-          'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
-        }`}
+        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${dragging ? 'border-sky-500 bg-sky-50' :
+            file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
+              'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
+          }`}
       >
         <input
           ref={inputRef}
@@ -110,9 +132,10 @@ export default function ReportUpload({ onResult }) {
             {!loading && (
               <button
                 onClick={(e) => { e.stopPropagation(); setFile(null); setError(''); }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 font-semibold text-xs border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
+                <span>Change File</span>
               </button>
             )}
           </div>

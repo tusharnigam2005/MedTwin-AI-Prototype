@@ -1,58 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
 import AgentResults from '../components/AgentResults';
 import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, CheckCircle2, AlertTriangle, Flag,
-  Users, Activity, FileText, RotateCcw, Shield
+  Users, Activity, FileText, RotateCcw, Shield, Loader2
 } from 'lucide-react';
-
-const mockPatientQueue = [
-  {
-    id: 'PT-101',
-    patient: 'Aarav Sharma',
-    age: 45,
-    gender: 'M',
-    report: 'Synthetic Medical Report (CBC & Lipids)',
-    riskLevel: 'urgent',
-    confidence: '94%',
-    reviewStatus: 'Pending',
-    date: '2026-07-23',
-  },
-  {
-    id: 'PT-102',
-    patient: 'Alex Johnson',
-    age: 52,
-    gender: 'M',
-    report: 'Comprehensive Blood Panel',
-    riskLevel: 'urgent',
-    confidence: '88%',
-    reviewStatus: 'Pending',
-    date: '2026-07-23',
-  },
-  {
-    id: 'PT-103',
-    patient: 'Priya Patel',
-    age: 38,
-    gender: 'F',
-    report: 'Routine HbA1c Scan',
-    riskLevel: 'routine',
-    confidence: '96%',
-    reviewStatus: 'Approved',
-    date: '2026-07-22',
-  },
-];
+import axios from 'axios';
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [result, setResult] = useState(null);
   const [reviewDecision, setReviewDecision] = useState(null); // 'approved' | 'more_data' | 'escalated'
+  const [queue, setQueue] = useState([]);
+  const [loadingQueue, setLoadingQueue] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchQueue = async () => {
+    try {
+      setLoadingQueue(true);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const res = await axios.get(`${baseUrl}/api/doctor/queue`);
+      setQueue(res.data);
+    } catch (err) {
+      console.error('Failed to fetch doctor queue', err);
+    } finally {
+      setLoadingQueue(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQueue();
+  }, []);
 
   const handleReviewClick = (patient) => {
     setSelectedPatient(patient);
-    setReviewDecision(patient.reviewStatus === 'Approved' ? 'approved' : null);
+    setReviewDecision(patient.status === 'approved' ? 'approved' : null);
+  };
+
+  const handleAction = async (status) => {
+    if (!selectedPatient) return;
+    try {
+      setActionLoading(true);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      await axios.post(`${baseUrl}/api/doctor/approve/${selectedPatient.id}`, {
+        action_status: status
+      });
+      setReviewDecision(status);
+      fetchQueue(); // Refresh queue
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to submit review');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -141,31 +143,45 @@ export default function DoctorDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {mockPatientQueue.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-800">
-                          {item.patient} <span className="text-slate-400 font-normal">({item.age}{item.gender})</span>
-                        </td>
-                        <td className="p-3 text-slate-600">{item.report}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${
-                            item.riskLevel === 'urgent' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                          }`}>
-                            {item.riskLevel}
-                          </span>
-                        </td>
-                        <td className="p-3 text-slate-600 font-medium">{item.confidence}</td>
-                        <td className="p-3 text-slate-600 font-medium">{item.reviewStatus}</td>
-                        <td className="p-3 text-right">
-                          <button
-                            onClick={() => handleReviewClick(item)}
-                            className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition-all"
-                          >
-                            Review
-                          </button>
+                    {loadingQueue ? (
+                      <tr>
+                        <td colSpan="6" className="p-8 text-center text-slate-500 font-semibold">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-500" />
+                          Fetching latest cases...
                         </td>
                       </tr>
-                    ))}
+                    ) : queue.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="p-8 text-center text-slate-500 font-semibold">
+                          No pending cases to review.
+                        </td>
+                      </tr>
+                    ) : (
+                      queue.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50">
+                          <td className="p-3 font-bold text-slate-800">
+                            {item.patient_name} <span className="text-slate-400 font-normal">(ID: {item.patient_id})</span>
+                          </td>
+                          <td className="p-3 text-slate-600">AI Report Analysis</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${item.risk_score > 70 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                              }`}>
+                              {item.risk_score > 70 ? 'High Risk' : 'Routine'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-slate-600 font-medium">{(item.confidence * 100).toFixed(0)}%</td>
+                          <td className="p-3 text-slate-600 font-medium capitalize">{item.status.replace(/_/g, ' ')}</td>
+                          <td className="p-3 text-right">
+                            <button
+                              onClick={() => handleReviewClick(item)}
+                              className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition-all"
+                            >
+                              Review
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -190,20 +206,23 @@ export default function DoctorDashboard() {
                   {!reviewDecision ? (
                     <>
                       <button
-                        onClick={() => setReviewDecision('approved')}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                        onClick={() => handleAction('approved')}
+                        disabled={actionLoading}
+                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
                       >
                         <CheckCircle2 className="w-4 h-4" /> Approve
                       </button>
                       <button
-                        onClick={() => setReviewDecision('more_data')}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                        onClick={() => handleAction('more_data')}
+                        disabled={actionLoading}
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
                       >
                         <Flag className="w-4 h-4" /> Request More Data
                       </button>
                       <button
-                        onClick={() => setReviewDecision('escalated')}
-                        className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                        onClick={() => handleAction('escalated')}
+                        disabled={actionLoading}
+                        className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
                       >
                         <AlertTriangle className="w-4 h-4" /> Escalate
                       </button>
@@ -231,14 +250,43 @@ export default function DoctorDashboard() {
               )}
             </div>
 
-            {/* Display AI Results if uploaded, otherwise sample message */}
-            {result ? (
-              <AgentResults result={result} />
+            {/* Display Full Structured AI Results from Agents for Doctor Review */}
+            {(result || selectedPatient?.details) ? (
+              <div className="space-y-4">
+                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex items-center justify-between text-xs text-sky-900 font-medium">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-sky-600" />
+                    <span>Viewing complete 6-Agent AI structured telemetry for <strong>{selectedPatient?.patient_name || result?.medical_report?.patient?.name || 'Patient'}</strong>.</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-white border border-sky-200 rounded-lg text-sky-700 font-bold uppercase text-[10px]">
+                    Verified Structured Output
+                  </span>
+                </div>
+
+                <AgentResults result={result || selectedPatient?.details} />
+              </div>
+            ) : selectedPatient && selectedPatient.ai_recommendation ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-slate-900 font-bold text-sm">AI Recommendation Summary</h3>
+                <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
+                  {selectedPatient.ai_recommendation}
+                </p>
+                <div className="flex gap-4 pt-4 border-t border-slate-100">
+                  <div className="text-xs">
+                    <span className="text-slate-500 font-bold">Risk Score: </span>
+                    <span className="text-slate-900 font-extrabold">{selectedPatient.risk_score} / 100</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-slate-500 font-bold">Confidence: </span>
+                    <span className="text-slate-900 font-extrabold">{(selectedPatient.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="text-slate-900 font-bold text-sm">Sample Patient Report Results</h3>
+                <h3 className="text-slate-900 font-bold text-sm">Patient Case Selection</h3>
                 <p className="text-slate-500 text-xs">
-                  Upload a document using the "Upload Patient Report" box above to inspect real-time agent output, or process new reports.
+                  Select a patient from the queue or upload a new report to inspect structured AI agent results.
                 </p>
               </div>
             )}

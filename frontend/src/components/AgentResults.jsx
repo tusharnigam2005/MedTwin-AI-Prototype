@@ -5,8 +5,14 @@ import {
   Calendar, Layers, Clock, ShieldCheck
 } from 'lucide-react';
 
-export default function AgentResults({ result }) {
-  const [activeTab, setActiveTab] = useState('all');
+export default function AgentResults({ result, initialTab = 'all' }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   if (!result) return null;
 
@@ -260,6 +266,52 @@ export default function AgentResults({ result }) {
             </div>
             <Activity className="w-5 h-5 text-sky-500" />
           </div>
+
+          {/* DYNAMIC HEALTH SCORE TEXT BOX (Red for low scores -> Shades of green for high scores) */}
+          {typeof health.health_score === 'number' && (() => {
+            const score = health.health_score;
+            let bgClass = 'bg-emerald-600 border-emerald-700 text-white';
+            let statusText = 'Optimal Health Score — Minimal risk indicators';
+            let icon = '✨';
+
+            if (score < 40) {
+              bgClass = 'bg-red-600 border-red-700 text-white shadow-red-100';
+              statusText = 'Critical Health Score — Urgent clinical evaluation required';
+              icon = '🚨';
+            } else if (score < 55) {
+              bgClass = 'bg-rose-500 border-rose-600 text-white shadow-rose-100';
+              statusText = 'Significant Risk Score — Multiple health concerns detected';
+              icon = '⚠️';
+            } else if (score < 70) {
+              bgClass = 'bg-lime-600 border-lime-700 text-white shadow-lime-100';
+              statusText = 'Moderate Health Score — Notable risk factors present';
+              icon = '🌱';
+            } else if (score < 85) {
+              bgClass = 'bg-green-600 border-green-700 text-white shadow-green-100';
+              statusText = 'Good Health Score — Strong overall medical markers';
+              icon = '🌿';
+            }
+
+            return (
+              <div className={`p-5 rounded-2xl border ${bgClass} shadow-md flex items-center justify-between transition-all`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
+                      {icon} MedTwin Health Score
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black tracking-tight">{score}</span>
+                    <span className="text-sm font-semibold opacity-80">/ 100</span>
+                  </div>
+                  <p className="text-xs font-medium opacity-95">{statusText}</p>
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center font-black text-2xl shadow-inner">
+                  {score}
+                </div>
+              </div>
+            );
+          })()}
 
           {health.risk_assessments?.length > 0 ? (
             <div className="grid sm:grid-cols-2 gap-4">

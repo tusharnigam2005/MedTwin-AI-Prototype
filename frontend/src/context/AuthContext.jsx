@@ -6,17 +6,17 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('medtwin_auth_user');
-      return saved ? JSON.parse(saved) : { name: 'Aarav Sharma', role: 'patient', id: 'PT-101' };
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return { name: 'Aarav Sharma', role: 'patient', id: 'PT-101' };
+      return null;
     }
   });
 
-  const login = (username, role) => {
+  const login = (username, role, userId) => {
     const newUser = {
       name: username || (role === 'doctor' ? 'Dr. Saubhik Bhaumik' : role === 'admin' ? 'Admin User' : 'Aarav Sharma'),
       role: role || 'patient',
-      id: role === 'doctor' ? 'DOC-402' : role === 'admin' ? 'ADM-001' : 'PT-101',
+      id: userId ? String(userId) : (role === 'doctor' ? 'DOC-402' : role === 'admin' ? 'ADM-001' : 'PT-101'),
     };
     localStorage.setItem('medtwin_auth_user', JSON.stringify(newUser));
     setUser(newUser);

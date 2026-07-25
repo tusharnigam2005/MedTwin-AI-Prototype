@@ -1,12 +1,20 @@
 import os
 import fitz
-from paddleocr import PaddleOCR
+# Lazy OCR instance
+_ocr = None
 
-
-# Initialize OCR once
-ocr = PaddleOCR(
-    lang="en"
-)
+def get_ocr():
+    global _ocr
+    if _ocr is None:
+        try:
+            from paddleocr import PaddleOCR
+            _ocr = PaddleOCR(lang="en")
+        except Exception as err:
+            raise RuntimeError(
+                f"PaddleOCR failed to initialize: {err}. "
+                "Ensure paddlepaddle and paddleocr are installed properly or use text-based PDFs."
+            )
+    return _ocr
 
 
 def extract_text_with_ocr(image_path: str) -> str:
@@ -15,7 +23,8 @@ def extract_text_with_ocr(image_path: str) -> str:
     """
 
     try:
-        result = ocr.predict(image_path)
+        ocr_engine = get_ocr()
+        result = ocr_engine.predict(image_path)
 
         extracted_lines = []
 
