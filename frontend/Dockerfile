@@ -2,11 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json .
-RUN npm install
+# Install the lightweight static server
+RUN npm install -g serve
 
-COPY . .
+# We already built the optimized dist folder locally, so just copy it in!
+COPY dist ./dist
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Serve it perfectly in production mode
+CMD ["serve", "-s", "dist", "-l", "5173"]
