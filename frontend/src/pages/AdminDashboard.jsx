@@ -15,7 +15,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const res = await axios.get(`${baseUrl}/api/admin/stats`);
         setStats(res.data);
       } catch (err) {

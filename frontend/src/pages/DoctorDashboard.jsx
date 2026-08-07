@@ -23,7 +23,7 @@ export default function DoctorDashboard() {
   const fetchQueue = async () => {
     try {
       setLoadingQueue(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       const res = await axios.get(`${baseUrl}/api/doctor/queue`);
       setQueue(res.data);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function DoctorDashboard() {
     if (!selectedPatient) return;
     try {
       setActionLoading(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       await axios.post(`${baseUrl}/api/doctor/approve/${selectedPatient.id}`, {
         action_status: status
       });
