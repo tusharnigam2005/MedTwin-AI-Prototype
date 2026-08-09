@@ -36,6 +36,10 @@ jobs:
             git clone https://github.com/${{ github.repository }}.git MedTwin-AI-V2
             cd MedTwin-AI-V2
 
+            echo "Creating required env file to prevent docker crash..."
+            mkdir -p ai
+            touch ai/.env
+
             echo "Building and starting Docker containers..."
             sudo docker compose up --build -d
             
