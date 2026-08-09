@@ -27,18 +27,17 @@ jobs:
             echo "🚀 Starting Automated Deployment on Cloud Server..."
             echo "=========================================================="
             
-            # Navigate to project directory (or clone if first time)
-            if [ ! -d "MedTwin-AI" ]; then
-              git clone https://github.com/${{ github.repository }}.git MedTwin-AI
-              cd MedTwin-AI
-            else
-              cd MedTwin-AI
-              git fetch origin
-              git reset --hard origin/main
-            fi
+            echo "Stopping old containers to free up ports..."
+            sudo docker stop $(sudo docker ps -q) || true
+            sudo docker rm $(sudo docker ps -aq) || true
+            
+            echo "Cloning fresh repository..."
+            rm -rf MedTwin-AI-V2
+            git clone https://github.com/${{ github.repository }}.git MedTwin-AI-V2
+            cd MedTwin-AI-V2
 
-            # Pull and rebuild containers cleanly in detached mode
-            sudo docker compose up --build -d --remove-orphans
+            echo "Building and starting Docker containers..."
+            sudo docker compose up --build -d
             
             echo "✅ Docker architecture rebuilt and running successfully!"
             sudo docker ps
