@@ -40,6 +40,9 @@ jobs:
             mkdir -p ai
             touch ai/.env
 
+            echo "Setting up production API URL for the frontend..."
+            echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_IP }}:8000" > frontend/.env.production
+
             echo "Building and starting Docker containers..."
             sudo docker compose up --build -d
             
