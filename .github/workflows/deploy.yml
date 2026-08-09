@@ -42,7 +42,7 @@ jobs:
             sudo docker rm $(sudo docker ps -aq) || true
             
             echo "Cloning fresh repository..."
-            rm -rf MedTwin-AI-V2
+            sudo rm -rf MedTwin-AI-V2
             git clone https://github.com/${{ github.repository }}.git MedTwin-AI-V2
             cd MedTwin-AI-V2
 
