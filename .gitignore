@@ -1,0 +1,42 @@
+# Node / Frontend
+node_modules/
+# dist/
+build/
+*.log
+.env
+.env.local
+.env.production
+ai/.env
+
+# Virtual Environment & Python
+black/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+build/
+dist/
+
+# Hardhat / Blockchain
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Database & Uploads
+*.sqlite3
+*.db
+uploads/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
