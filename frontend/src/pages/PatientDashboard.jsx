@@ -200,15 +200,92 @@ export default function PatientDashboard() {
           <MyReportsList />
         ) : currentPath === '/patient/history' ? (
           <PatientHistoryTimeline />
-        ) : ['/patient/appointments', '/patient/messages', '/patient/billing'].includes(currentPath) ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-sky-50 flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-sky-500" />
+        ) : currentPath === '/patient/appointments' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
             </div>
-            <h3 className="text-slate-900 font-bold text-xl mb-2">Feature Coming Soon</h3>
-            <p className="text-slate-500 text-sm max-w-md mx-auto">
-              This module is part of our upcoming roadmap for the complete MedTwin portal experience. Check back soon!
-            </p>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Upcoming Appointments</h3>
+            <div className="space-y-3">
+              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center bg-slate-50">
+                <div>
+                  <p className="font-bold text-slate-900">Dr. Saubhik Bhaumik</p>
+                  <p className="text-xs text-slate-500">Endocrinology Follow-up</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-sky-600">Aug 15, 2026</p>
+                  <p className="text-xs text-slate-500">10:00 AM</p>
+                </div>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-slate-900">Dr. Anita Patel</p>
+                  <p className="text-xs text-slate-500">Annual Wellness Check</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-slate-700">Sep 02, 2026</p>
+                  <p className="text-xs text-slate-500">02:30 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : currentPath === '/patient/messages' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
+            </div>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Secure Inbox</h3>
+            <div className="space-y-3">
+              <div className="p-4 border border-sky-200 rounded-xl bg-sky-50 cursor-pointer hover:bg-sky-100 transition-colors">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="font-bold text-sky-900">Dr. Saubhik Bhaumik</p>
+                  <span className="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full font-bold">New</span>
+                </div>
+                <p className="text-sm font-semibold text-slate-800">Regarding your recent HbA1c results</p>
+                <p className="text-xs text-slate-500 truncate mt-1">Please make sure to review the AI analysis and start the recommended diet changes...</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="font-bold text-slate-700">Billing Department</p>
+                  <span className="text-[10px] text-slate-500">2 days ago</span>
+                </div>
+                <p className="text-sm font-semibold text-slate-800">Invoice #4029 Available</p>
+                <p className="text-xs text-slate-500 truncate mt-1">Your latest invoice has been generated and is ready for payment.</p>
+              </div>
+            </div>
+          </div>
+        ) : currentPath === '/patient/billing' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
+            </div>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Billing & Claims</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                    <th className="p-3 font-bold">Date</th>
+                    <th className="p-3 font-bold">Description</th>
+                    <th className="p-3 font-bold">Amount</th>
+                    <th className="p-3 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-slate-50">
+                    <td className="p-3 text-slate-600">Aug 01, 2026</td>
+                    <td className="p-3 font-medium text-slate-800">Comprehensive Blood Panel</td>
+                    <td className="p-3 text-slate-600">$120.00</td>
+                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Due</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="p-3 text-slate-600">Jul 15, 2026</td>
+                    <td className="p-3 font-medium text-slate-800">General Consultation</td>
+                    <td className="p-3 text-slate-600">$85.00</td>
+                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Paid</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : loadingInitial ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">

@@ -6,7 +6,7 @@ import AgentResults from '../components/AgentResults';
 import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, CheckCircle2, AlertTriangle, Flag,
-  Users, Activity, FileText, RotateCcw, Shield, Loader2
+  Users, Activity, FileText, RotateCcw, Shield, Loader2, Search, FolderOpen
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -92,19 +92,25 @@ export default function DoctorDashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
         {/* Doctor Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
-          <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 font-sans">
-              Doctor Review Portal — <span className="text-sky-500">{user?.name || 'Dr. Saubhik Bhaumik'}</span>
-            </h1>
-            <p className="text-slate-500 text-xs mt-1">
-              Review AI-generated patient reports, inspect risk assessments, and record clinical decisions.
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md border border-sky-600">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'D'}
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {user?.name || 'Dr. Saubhik Bhaumik'}
+              </h1>
+              <p className="text-slate-500 text-sm mt-0.5 font-medium flex items-center gap-1.5">
+                <Stethoscope className="w-4 h-4 text-sky-500" /> Chief Clinical Officer
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
-              Licensed Physician Review Queue
+            <span className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs font-bold flex items-center gap-2 shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Portal Active
             </span>
           </div>
         </div>
@@ -117,7 +123,7 @@ export default function DoctorDashboard() {
                 <span className="text-slate-500 text-xs font-bold uppercase">Pending Reviews</span>
                 <Users className="w-4 h-4 text-sky-500" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-900">2</p>
+              <p className="text-3xl font-extrabold text-slate-900">{pendingQueue.length}</p>
               <p className="text-slate-500 text-xs">Patient cases awaiting sign-off</p>
             </div>
 
@@ -126,7 +132,9 @@ export default function DoctorDashboard() {
                 <span className="text-slate-500 text-xs font-bold uppercase">High-Risk Cases</span>
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
               </div>
-              <p className="text-3xl font-extrabold text-amber-600">2</p>
+              <p className="text-3xl font-extrabold text-amber-600">
+                {pendingQueue.filter(q => q.risk_score > 70).length}
+              </p>
               <p className="text-slate-500 text-xs">Require priority clinical review</p>
             </div>
 
@@ -135,7 +143,7 @@ export default function DoctorDashboard() {
                 <span className="text-slate-500 text-xs font-bold uppercase">Total Patients Reviewed</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               </div>
-              <p className="text-3xl font-extrabold text-emerald-600">14</p>
+              <p className="text-3xl font-extrabold text-emerald-600">{approvedQueue.length}</p>
               <p className="text-slate-500 text-xs">Approved this month</p>
             </div>
           </div>
@@ -143,14 +151,73 @@ export default function DoctorDashboard() {
 
         {/* Dynamic Route Content */}
         {currentPath === '/doctor/history' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-sky-50 flex items-center justify-center mx-auto mb-4">
-              <History className="w-8 h-8 text-sky-500" />
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock directory data for demonstration purposes.
             </div>
-            <h3 className="text-slate-900 font-bold text-xl mb-2">Medical History Library</h3>
-            <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Search and view historical medical records and AI analyses for all patients under your care.
-            </p>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                  <FolderOpen className="w-5 h-5 text-indigo-500" />
+                </div>
+                <div>
+                  <h3 className="text-slate-900 font-bold text-lg">Patient Directory & History</h3>
+                  <p className="text-slate-500 text-xs mt-0.5">Search and view historical medical records for all patients under your care.</p>
+                </div>
+              </div>
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search patient name or ID..."
+                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 w-64"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                    <th className="p-3 font-bold">Patient Name</th>
+                    <th className="p-3 font-bold">Patient ID</th>
+                    <th className="p-3 font-bold">Last Active</th>
+                    <th className="p-3 font-bold">Status</th>
+                    <th className="p-3 font-bold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {queue.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="p-8 text-center text-slate-500 font-semibold">
+                        No patients found in directory.
+                      </td>
+                    </tr>
+                  ) : (
+                    Array.from(new Set(queue.map(q => q.patient_id))).map(uniqueId => {
+                      const latestRecord = queue.find(q => q.patient_id === uniqueId);
+                      return (
+                        <tr key={uniqueId} className="hover:bg-slate-50">
+                          <td className="p-3 font-bold text-slate-900">{latestRecord.patient_name}</td>
+                          <td className="p-3 text-slate-500">{uniqueId}</td>
+                          <td className="p-3 text-slate-600">{latestRecord.created_at}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${latestRecord.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'}`}>
+                              {latestRecord.status === 'approved' ? 'Stable / Discharged' : 'Active Care'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs shadow-sm transition-all">
+                              View Complete Chart
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : currentPath === '/doctor/approvals' ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
