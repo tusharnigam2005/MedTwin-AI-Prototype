@@ -8,14 +8,18 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab] = useState('monitoring');
   const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [logsLoading, setLogsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const res = await axios.get(`${baseUrl}/api/admin/stats`);
         setStats(res.data);
       } catch (err) {
@@ -26,6 +30,40 @@ export default function AdminDashboard() {
     };
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    if (tab === 'users') {
+      fetchUsers();
+    } else if (tab === 'reports') {
+      fetchLogs();
+    }
+  }, [tab]);
+
+  const fetchUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await axios.get(`${baseUrl}/api/admin/users`);
+      setUsers(res.data);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      setLogsLoading(true);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await axios.get(`${baseUrl}/api/admin/logs`);
+      setLogs(res.data);
+    } catch (err) {
+      console.error('Failed to fetch logs:', err);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
@@ -118,18 +156,25 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  <tr>
-                    <td className="p-3 font-mono">PT-101</td>
-                    <td className="p-3 font-bold text-slate-800">Aarav Sharma</td>
-                    <td className="p-3 text-slate-600">Patient</td>
-                    <td className="p-3 text-emerald-600 font-semibold">Active</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-mono">DOC-402</td>
-                    <td className="p-3 font-bold text-slate-800">Dr. Saubhik Bhaumik</td>
-                    <td className="p-3 text-slate-600">Doctor</td>
-                    <td className="p-3 text-emerald-600 font-semibold">Active</td>
-                  </tr>
+                  {usersLoading ? (
+                    <tr>
+                      <td colSpan="4" className="p-8 text-center text-slate-500 font-semibold">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-500" />
+                        Loading users...
+                      </td>
+                    </tr>
+                  ) : users.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="p-8 text-center text-slate-500 font-semibold">No users found.</td>
+                    </tr>
+                  ) : users.map(u => (
+                    <tr key={u.id}>
+                      <td className="p-3 font-mono">{u.display_id}</td>
+                      <td className="p-3 font-bold text-slate-800">{u.name}</td>
+                      <td className="p-3 text-slate-600">{u.role}</td>
+                      <td className="p-3 text-emerald-600 font-semibold">{u.status}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -141,10 +186,19 @@ export default function AdminDashboard() {
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-slate-900 font-bold text-base">Report Processing Logs</h3>
             <div className="text-xs text-slate-600 space-y-2">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between">
-                <span>[2026-07-23 16:40] Processed synthetic_medical_report.pdf — 5 Agents Completed</span>
-                <span className="text-emerald-600 font-bold">200 OK</span>
-              </div>
+              {logsLoading ? (
+                <div className="p-8 text-center text-slate-500 font-semibold flex flex-col items-center">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-500" />
+                  Loading logs...
+                </div>
+              ) : logs.length === 0 ? (
+                <div className="p-4 text-center text-slate-500 font-semibold">No logs found.</div>
+              ) : logs.map(l => (
+                <div key={l.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between">
+                  <span>[{l.timestamp}] {l.message}</span>
+                  <span className="text-emerald-600 font-bold">{l.status_code}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

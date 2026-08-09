@@ -3,13 +3,17 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   HeartPulse, LogOut, User, Stethoscope, Shield, Menu, X,
-  FileText, Activity, Pill, HeartHandshake, History, LayoutDashboard
+  FileText, Activity, Pill, HeartHandshake, History, LayoutDashboard,
+  Calendar, MessageSquare, CreditCard
 } from 'lucide-react';
+
+import PatientProfileModal from './PatientProfileModal';
 
 export default function Navbar() {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -60,7 +64,7 @@ export default function Navbar() {
         {/* Navigation links for Patient */}
         {isPatient && (
           <nav className="hidden lg:flex items-center gap-1">
-            <NavLink to="/patient" className={linkClass}>
+            <NavLink to="/patient" end className={linkClass}>
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Dashboard</span>
             </NavLink>
@@ -68,17 +72,17 @@ export default function Navbar() {
               <FileText className="w-3.5 h-3.5" />
               <span>My Reports</span>
             </NavLink>
-            <NavLink to="/patient/health" className={linkClass}>
-              <Activity className="w-3.5 h-3.5" />
-              <span>Health Analysis</span>
+            <NavLink to="/patient/appointments" className={linkClass}>
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Appointments</span>
             </NavLink>
-            <NavLink to="/patient/medications" className={linkClass}>
-              <Pill className="w-3.5 h-3.5" />
-              <span>Medications</span>
+            <NavLink to="/patient/messages" className={linkClass}>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Messages</span>
             </NavLink>
-            <NavLink to="/patient/recommendations" className={linkClass}>
-              <HeartHandshake className="w-3.5 h-3.5" />
-              <span>Recommendations</span>
+            <NavLink to="/patient/billing" className={linkClass}>
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Billing</span>
             </NavLink>
             <NavLink to="/patient/history" className={linkClass}>
               <History className="w-3.5 h-3.5" />
@@ -90,7 +94,7 @@ export default function Navbar() {
         {/* Navigation links for Doctor */}
         {isDoctor && (
           <nav className="hidden lg:flex items-center gap-1">
-            <NavLink to="/doctor" className={linkClass}>
+            <NavLink to="/doctor" end className={linkClass}>
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Patient Queue</span>
             </NavLink>
@@ -131,11 +135,15 @@ export default function Navbar() {
                 {isDoctor ? '🩺 Doctor Portal' : isAdmin ? '🛡️ Admin Monitor' : '👤 Patient Portal'}
               </span>
 
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div 
+                className="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-colors"
+                onClick={() => isPatient && setProfileModalOpen(true)}
+                title={isPatient ? "View Medical Profile" : "User Profile"}
+              >
                 <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold text-xs">
                   {isDoctor ? 'Dr' : isAdmin ? 'Ad' : 'Pt'}
                 </div>
-                <div className="text-left text-xs">
+                <div className="text-left text-xs pr-1">
                   <p className="font-semibold text-slate-800 leading-tight">{user.name}</p>
                   <p className="text-[10px] text-slate-500 capitalize">{user.role}</p>
                 </div>
@@ -173,10 +181,25 @@ export default function Navbar() {
         <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-2">
           {isPatient && (
             <div className="space-y-1">
-              <NavLink to="/patient" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Dashboard</NavLink>
+              <NavLink to="/patient" end onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Dashboard</NavLink>
               <NavLink to="/patient/reports" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">My Reports</NavLink>
-              <NavLink to="/patient/health" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Health Analysis</NavLink>
-              <NavLink to="/patient/medications" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Medications</NavLink>
+              <NavLink to="/patient/appointments" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Appointments</NavLink>
+              <NavLink to="/patient/messages" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Messages</NavLink>
+              <NavLink to="/patient/billing" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Billing</NavLink>
+              <NavLink to="/patient/history" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">History</NavLink>
+            </div>
+          )}
+          {isDoctor && (
+            <div className="space-y-1">
+              <NavLink to="/doctor" end onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Patient Queue</NavLink>
+              <NavLink to="/doctor/history" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Medical History</NavLink>
+              <NavLink to="/doctor/approvals" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Pending Approvals</NavLink>
+            </div>
+          )}
+          {isAdmin && (
+            <div className="space-y-1">
+              <NavLink to="/admin" end onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Dashboard</NavLink>
+              <NavLink to="/admin/blockchain" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Blockchain</NavLink>
             </div>
           )}
           {user && (
@@ -189,6 +212,12 @@ export default function Navbar() {
           )}
         </div>
       )}
+      
+      <PatientProfileModal 
+        isOpen={profileModalOpen} 
+        onClose={() => setProfileModalOpen(false)} 
+        user={user} 
+      />
     </header>
   );
 }

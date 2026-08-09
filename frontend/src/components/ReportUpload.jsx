@@ -92,7 +92,7 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
     } catch (err) {
       setLoading(false);
       if (err.code === 'ERR_NETWORK') {
-        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8001.');
+        setError('Cannot connect to the backend server. Ensure FastAPI is running on http://localhost:8000.');
       } else {
         setError(err.response?.data?.detail || 'Failed to process report. Please verify the file and try again.');
       }
