@@ -23,9 +23,19 @@ jobs:
           username: ${{ secrets.SERVER_USER }}       # Server username (e.g., ubuntu, root, ec2-user)
           key: ${{ secrets.SERVER_SSH_KEY }}         # SSH Private Key for secure login
           script: |
+            set -e
             echo "=========================================================="
             echo "🚀 Starting Automated Deployment on Cloud Server..."
             echo "=========================================================="
+            
+            echo "Checking memory and creating a 2GB swap file to prevent OOM crashes..."
+            if [ ! -f /swapfile ]; then
+              sudo fallocate -l 2G /swapfile || true
+              sudo chmod 600 /swapfile || true
+              sudo mkswap /swapfile || true
+              sudo swapon /swapfile || true
+            fi
+
             
             echo "Stopping old containers to free up ports..."
             sudo docker stop $(sudo docker ps -q) || true
