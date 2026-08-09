@@ -68,8 +68,7 @@ async def upload_report(
         patient_id=patient.id,
         ocr_text=ocr_text,
         medical_history=patient.medical_history or {},
-        vitals={"heart_rate": 74, "blood_pressure": "120/80"},
-        patient_name=patient.user.email.split('@')[0].replace('.', ' ').title() if (patient.user and patient.user.email) else "Demo Patient"
+        vitals={"heart_rate": 74, "blood_pressure": "120/80"}
     )
 
     # 3. Store Prediction in DB

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
 import AgentResults from '../components/AgentResults';
@@ -11,6 +12,9 @@ import axios from 'axios';
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
+  const location = useLocation();
+  const currentPath = location.pathname.replace(/\/$/, '');
+
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [result, setResult] = useState(null);
   const [reviewDecision, setReviewDecision] = useState(null); // 'approved' | 'more_data' | 'escalated'
@@ -19,6 +23,10 @@ export default function DoctorDashboard() {
   const [actionLoading, setActionLoading] = useState(false);
   const [reportId, setReportId] = useState(null);
   const [bcData, setBcData] = useState(null);
+  const [showAllQueue, setShowAllQueue] = useState(false);
+
+  const pendingQueue = queue.filter(q => q.status === 'pending_doctor_review');
+  const approvedQueue = queue.filter(q => q.status === 'approved');
 
   const fetchQueue = async () => {
     try {
@@ -40,8 +48,8 @@ export default function DoctorDashboard() {
   const handleReviewClick = (patient) => {
     setSelectedPatient(patient);
     setReviewDecision(patient.status === 'approved' ? 'approved' : null);
-    if (patient.details && patient.details.latest_report_id) setReportId(patient.details.latest_report_id);
-    if (patient.details && patient.details.blockchain_verification) setBcData(patient.details.blockchain_verification);
+    if (patient.latest_report_id) setReportId(patient.latest_report_id);
+    if (patient.blockchain_verification) setBcData(patient.blockchain_verification);
   };
 
   const handleBlockchainVerify = async () => {
@@ -102,7 +110,7 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Summary Metrics Cards */}
-        {!result && !selectedPatient && (
+        {currentPath === '/doctor' && !result && !selectedPatient && (
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
               <div className="flex items-center justify-between">
@@ -133,8 +141,89 @@ export default function DoctorDashboard() {
           </div>
         )}
 
-        {/* Main Queue Table or Detailed Patient Review View */}
-        {!result && !selectedPatient ? (
+        {/* Dynamic Route Content */}
+        {currentPath === '/doctor/history' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-sky-50 flex items-center justify-center mx-auto mb-4">
+              <History className="w-8 h-8 text-sky-500" />
+            </div>
+            <h3 className="text-slate-900 font-bold text-xl mb-2">Medical History Library</h3>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">
+              Search and view historical medical records and AI analyses for all patients under your care.
+            </p>
+          </div>
+        ) : currentPath === '/doctor/approvals' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-slate-900 font-bold text-lg">My Approvals</h3>
+                <p className="text-slate-500 text-xs mt-0.5">A complete audit log of all AI recommendations you have clinically verified and approved.</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-sky-50 text-slate-700 border-b border-slate-200">
+                    <th className="p-3 font-bold">Patient</th>
+                    <th className="p-3 font-bold">Clinical Summary</th>
+                    <th className="p-3 font-bold">Risk Level</th>
+                    <th className="p-3 font-bold">Date Approved</th>
+                    <th className="p-3 font-bold">Status</th>
+                    <th className="p-3 font-bold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {loadingQueue ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-slate-500 font-semibold">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-sky-500" />
+                        Fetching approved cases...
+                      </td>
+                    </tr>
+                  ) : approvedQueue.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-slate-500 font-semibold">
+                        No approved cases found.
+                      </td>
+                    </tr>
+                  ) : (
+                    approvedQueue.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50">
+                        <td className="p-3 font-bold text-slate-800 whitespace-nowrap">
+                          {item.patient_name} <span className="text-slate-400 font-normal">(ID: {item.patient_id})</span>
+                        </td>
+                        <td className="p-3 text-slate-600 max-w-xs truncate" title={item.ai_recommendation}>{item.ai_recommendation || 'AI Report Analysis'}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${item.risk_score > 70 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {item.risk_score > 70 ? 'High Risk' : 'Routine'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{item.created_at}</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold capitalize bg-emerald-100 text-emerald-800">
+                            Approved
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleReviewClick(item)}
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs shadow-sm transition-all"
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : !result && !selectedPatient ? (
           <div className="space-y-6">
 
             {/* Upload Area for Doctor */}
@@ -161,9 +250,9 @@ export default function DoctorDashboard() {
                   <thead>
                     <tr className="bg-sky-50 text-slate-700 border-b border-slate-200">
                       <th className="p-3 font-bold">Patient</th>
-                      <th className="p-3 font-bold">Report Name</th>
+                      <th className="p-3 font-bold">Clinical Summary</th>
                       <th className="p-3 font-bold">Risk Level</th>
-                      <th className="p-3 font-bold">Confidence</th>
+                      <th className="p-3 font-bold">Date</th>
                       <th className="p-3 font-bold">Status</th>
                       <th className="p-3 font-bold text-right">Action</th>
                     </tr>
@@ -176,33 +265,33 @@ export default function DoctorDashboard() {
                           Fetching latest cases...
                         </td>
                       </tr>
-                    ) : queue.length === 0 ? (
+                    ) : pendingQueue.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="p-8 text-center text-slate-500 font-semibold">
                           No pending cases to review.
                         </td>
                       </tr>
                     ) : (
-                      queue.map((item) => (
+                      (showAllQueue ? pendingQueue : pendingQueue.slice(0, 3)).map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50">
-                          <td className="p-3 font-bold text-slate-800">
+                          <td className="p-3 font-bold text-slate-800 whitespace-nowrap">
                             {item.patient_name} <span className="text-slate-400 font-normal">(ID: {item.patient_id})</span>
                           </td>
-                          <td className="p-3 text-slate-600">AI Report Analysis</td>
+                          <td className="p-3 text-slate-600 max-w-xs truncate" title={item.ai_recommendation}>{item.ai_recommendation || 'AI Report Analysis'}</td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold capitalize ${item.risk_score > 70 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                               }`}>
                               {item.risk_score > 70 ? 'High Risk' : 'Routine'}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-600 font-medium">{(item.confidence * 100).toFixed(0)}%</td>
-                          <td className="p-3 text-slate-600 font-medium capitalize">{item.status.replace(/_/g, ' ')}</td>
+                          <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{item.created_at}</td>
+                          <td className="p-3 text-amber-600 font-medium capitalize whitespace-nowrap">{item.status.replace(/_/g, ' ')}</td>
                           <td className="p-3 text-right">
                             <button
                               onClick={() => handleReviewClick(item)}
-                              className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition-all"
+                              className="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition-all whitespace-nowrap"
                             >
-                              Review
+                              Review Case
                             </button>
                           </td>
                         </tr>
@@ -211,6 +300,17 @@ export default function DoctorDashboard() {
                   </tbody>
                 </table>
               </div>
+              
+              {!loadingQueue && pendingQueue.length > 3 && (
+                <div className="pt-2 flex justify-center">
+                  <button 
+                    onClick={() => setShowAllQueue(!showAllQueue)}
+                    className="text-sky-600 hover:text-sky-700 font-bold text-xs hover:underline flex items-center gap-1"
+                  >
+                    {showAllQueue ? 'Show Less' : `View All ${pendingQueue.length} Pending Cases`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
