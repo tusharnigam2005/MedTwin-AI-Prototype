@@ -23,22 +23,44 @@ jobs:
           username: ${{ secrets.SERVER_USER }}       # Server username (e.g., ubuntu, root, ec2-user)
           key: ${{ secrets.SERVER_SSH_KEY }}         # SSH Private Key for secure login
           script: |
+            set -e
             echo "=========================================================="
             echo "🚀 Starting Automated Deployment on Cloud Server..."
             echo "=========================================================="
             
-            # Navigate to project directory (or clone if first time)
-            if [ ! -d "MedTwin-AI" ]; then
-              git clone https://github.com/${{ github.repository }}.git MedTwin-AI
-              cd MedTwin-AI
-            else
-              cd MedTwin-AI
-              git fetch origin
-              git reset --hard origin/main
+            echo "Stopping old containers to free up ports..."
+            if [ "$(sudo docker ps -q)" ]; then
+              sudo docker stop $(sudo docker ps -q)
             fi
+            if [ "$(sudo docker ps -aq)" ]; then
+              sudo docker rm $(sudo docker ps -aq)
+            fi
+            
+            echo "Aggressively cleaning up disk space..."
+            sudo docker system prune -a -f --volumes
+            sudo rm -rf MedTwin-*
+            
+            echo "Checking memory and creating a 2GB swap file to prevent OOM crashes..."
+            if [ ! -f /swapfile ]; then
+              sudo fallocate -l 2G /swapfile || true
+              sudo chmod 600 /swapfile || true
+              sudo mkswap /swapfile || true
+              sudo swapon /swapfile || true
+            fi
+            
+            echo "Cloning fresh repository..."
+            git clone https://github.com/${{ github.repository }}.git MedTwin-AI-V2
+            cd MedTwin-AI-V2
 
-            # Pull and rebuild containers cleanly in detached mode
-            sudo docker compose up --build -d --remove-orphans
+            echo "Creating required env file to prevent docker crash..."
+            mkdir -p ai
+            touch ai/.env
+
+            echo "Setting up production API URL for the frontend..."
+            echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_IP }}:8000" > frontend/.env.production
+
+            echo "Building and starting Docker containers..."
+            sudo docker compose up --build -d
             
             echo "✅ Docker architecture rebuilt and running successfully!"
             sudo docker ps
