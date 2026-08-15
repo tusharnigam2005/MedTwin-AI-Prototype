@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Interceptor to attach JWT token if present
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('medtwin_jwt');
+  const token = localStorage.getItem('medtwin_token') || localStorage.getItem('medtwin_jwt');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

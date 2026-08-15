@@ -1,147 +1,366 @@
-import React from 'react';
-import { Activity, ShieldCheck, Heart, Pill, Apple, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
-import RiskChart from '../components/RiskChart';
+import AgentResults from '../components/AgentResults';
+import MyReportsList from '../components/MyReportsList';
+import PatientHistoryTimeline from '../components/PatientHistoryTimeline';
+import { useAuth } from '../context/AuthContext';
+import {
+  HeartPulse, Upload, RotateCcw, Activity, TrendingUp,
+  FileText, Shield, CheckCircle2, Clock, Loader2
+} from 'lucide-react';
+import axios from 'axios';
 
 export default function PatientDashboard() {
+  const { user } = useAuth();
+  const location = useLocation();
+  const [result, setResult] = useState(null);
+  const [recStatus, setRecStatus] = useState("none");
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [reportId, setReportId] = useState(null);
+  const [bcData, setBcData] = useState(null);
+
+  const currentPath = location.pathname.replace(/\/$/, '');
+
+  let activeAgentTab = 'all';
+  let pageTitle = 'Dashboard Overview';
+  let pageSub = 'Upload medical documents to view analysis from the 6 AI agents.';
+
+  if (currentPath === '/patient/reports') {
+    activeAgentTab = 'all';
+    pageTitle = 'My Medical Reports';
+    pageSub = 'Access your processed reports and health summaries.';
+  } else if (currentPath === '/patient/appointments') {
+    activeAgentTab = 'all';
+    pageTitle = 'Appointments';
+    pageSub = 'Manage your upcoming and past doctor visits.';
+  } else if (currentPath === '/patient/messages') {
+    activeAgentTab = 'all';
+    pageTitle = 'Secure Messages';
+    pageSub = 'Communicate securely with your healthcare team.';
+  } else if (currentPath === '/patient/billing') {
+    activeAgentTab = 'all';
+    pageTitle = 'Billing & Insurance';
+    pageSub = 'View statements, pay bills, and manage insurance information.';
+  } else if (currentPath === '/patient/history') {
+    activeAgentTab = 'all';
+    pageTitle = 'Patient Medical Timeline & History';
+    pageSub = 'Chronological history of processed reports, doctor sign-offs, and blockchain verification.';
+  }
+
+  // Extract numeric patient ID from 'PT-101' format
+  const numericPatientId = user?.id ? user.id.replace(/\D/g, '') : '1';
+
+  React.useEffect(() => {
+    const fetchLatestPrediction = async () => {
+      try {
+        setLoadingInitial(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const res = await axios.get(`${baseUrl}/api/prediction/${numericPatientId}`);
+        // If the backend returns a prediction with details, use it
+        if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
+          setResult(res.data.details);
+          setRecStatus(res.data.recommendation_status || "none");
+          if (res.data.latest_report_id) setReportId(res.data.latest_report_id);
+          if (res.data.blockchain_verification) setBcData(res.data.blockchain_verification);
+        }
+      } catch (err) {
+        console.error("No previous predictions found or error fetching:", err);
+      } finally {
+        setLoadingInitial(false);
+      }
+    };
+    fetchLatestPrediction();
+  }, [numericPatientId]);
+
+  const triageLevel = result?.emergency_analysis?.triage_level || 'routine';
+  const doctorApproved = recStatus === "approved";
+  const doctorRejected = recStatus === "rejected";
+  const doctorEscalated = recStatus === "escalated";
+  const doctorMoreData = recStatus === "more_data";
+
+  const handleBlockchainVerify = async () => {
+    if (!reportId) return alert('No report found to verify.');
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
+      if (res.data.is_match) {
+        alert('✅ Blockchain Verification Successful! The file matches the Polygon Smart Contract hash perfectly. Downloading now...');
+        window.open(`${baseUrl}/api/blockchain/download/${reportId}`, '_blank');
+      } else {
+        alert('🔴 Blockchain Verification Failed: The file has been modified or tampered with.');
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Verification error');
+    }
+  };
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Top Welcome & Score Header matching Slide 28 UI Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Health Score Card (Slide 28: 82 / 100) */}
-        <div className="glass-card md:col-span-2 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-navy-800 to-navy-700/90">
-          <div className="flex items-start justify-between z-10">
-            <div>
-              <span className="text-xs font-semibold text-teal-400 uppercase tracking-wider block mb-1">
-                Continuous Twin Status
-              </span>
-              <h1 className="text-3xl font-extrabold text-white">Health Score</h1>
-              <p className="text-slate-400 text-sm mt-1">
-                Persistent AI model of your cardiovascular, metabolic, and lifestyle state.
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-              <Activity className="w-6 h-6 text-teal-400" />
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+      <Navbar />
 
-          <div className="mt-8 flex items-baseline gap-4 z-10">
-            <span className="text-6xl font-black tracking-tight text-teal-400 drop-shadow-md">
-              82 <span className="text-3xl font-bold text-slate-400">/ 100</span>
-            </span>
-            <span className="px-3.5 py-1.5 rounded-full bg-teal-500/20 text-teal-300 font-bold text-sm">
-              OPTIMAL BASELINE
-            </span>
-          </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
-          {/* Background decoration glow */}
-          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        </div>
-
-        {/* Current Risk Card (Slide 28: Low) */}
-        <div className="glass-card flex flex-col justify-between border-l-4 border-l-teal-400">
+        {/* Top Greeting */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
-              Prediction Agent Status
-            </span>
-            <h2 className="text-xl font-bold text-white mt-1">Current Risk Status</h2>
-          </div>
-
-          <div className="my-6">
-            <span className="text-5xl font-black text-teal-400">Low</span>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              No critical chronic disease trajectory indicators flagged from your latest 5-agent LangGraph analysis.
+            <h1 className="text-3xl font-extrabold text-slate-900 font-sans">
+              {pageTitle}
+            </h1>
+            <p className="text-slate-500 text-xs mt-1">
+              {pageSub}
             </p>
           </div>
 
-          <div className="pt-4 border-t border-navy-700/80 flex items-center justify-between text-xs text-slate-400">
-            <span>Confidence Level: <strong className="text-white">94.2%</strong></span>
-            <span className="text-teal-400 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Stable</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Middle Grid: Upload Report & Trajectory Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReportUpload />
-        <RiskChart />
-      </div>
-
-      {/* Bottom Grid: Recent Recommendations & Blockchain Verification matching Slide 28 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recent Recommendations */}
-        <div className="glass-card space-y-4">
-          <div className="flex items-center justify-between border-b border-navy-700/80 pb-3">
-            <h3 className="font-bold text-white text-lg flex items-center gap-2">
-              <Apple className="w-5 h-5 text-teal-400" /> Recent Recommendations
-            </h3>
-            <span className="text-xs text-slate-400">Doctor Sign-Off Verified</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="p-4 rounded-xl bg-navy-900/60 border border-navy-700/60 flex items-start gap-3.5">
-              <Pill className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-white">Medication Agent Schedule</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Maintain Metformin 500mg daily. No drug interactions flagged with new vitamin regimen.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-navy-900/60 border border-navy-700/60 flex items-start gap-3.5">
-              <Heart className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-white">Lifestyle Optimization Target</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  30 minutes moderate cardio. Hydration target adjusted to 2.8L based on wearable sleep recovery score.
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-sky-500" />
+              Patient: {user?.name || 'Aarav Sharma'}
+            </span>
           </div>
         </div>
 
-        {/* Blockchain Verification Box (Slide 28 exact replica) */}
-        <div className="glass-card flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-navy-700/80 pb-3">
-              <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-teal-400" /> Blockchain Verification
-              </h3>
-              <span className="px-2.5 py-1 rounded bg-teal-500/10 text-teal-400 text-xs font-semibold">
-                Polygon Network
-              </span>
-            </div>
+        {/* Top Summary Cards (Only show on main dashboard) */}
+        {currentPath === '/patient' && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-            <div className="mt-6 space-y-4">
-              <div className="p-4 rounded-xl bg-navy-900/80 border border-teal-500/20 font-mono text-xs space-y-2">
-                <div className="flex justify-between text-slate-400">
-                  <span>Smart Contract:</span>
-                  <span className="text-teal-400">MedTwinTrust.sol</span>
+          {/* Health Analysis Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Health Analysis</span>
+              <Activity className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {result ? 'Report Analyzed' : 'Baseline Active'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? '6 AI agents processed' : 'Upload a report to generate AI analysis'}
+            </p>
+          </div>
+
+          {/* Current Risk Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Current Risk</span>
+              <TrendingUp className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900 capitalize">
+              {result ? triageLevel : 'Low Risk'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? 'From latest report data' : 'Multi-factor baseline'}
+            </p>
+          </div>
+
+          {/* Latest Report Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Latest Report</span>
+              <FileText className="w-4 h-4 text-sky-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {result ? 'CBC / Blood Test' : 'No Report'}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {result ? result.medical_report?.report_date || 'Processed today' : 'Awaiting document upload'}
+            </p>
+          </div>
+
+          {/* Doctor Review Status Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 text-xs font-bold uppercase">Doctor Review Status</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">
+              {!result ? 'Up to Date' : (
+                doctorApproved ? 'Approved' :
+                  doctorRejected ? 'Rejected' :
+                    doctorEscalated ? 'Escalated' :
+                      doctorMoreData ? 'Data Requested' :
+                        'Pending Sign-Off'
+              )}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {!result ? 'No pending reviews' : (
+                doctorApproved ? 'Verified by your doctor' :
+                  doctorRejected ? 'Doctor flagged issues' :
+                    doctorEscalated ? 'Doctor escalated case' :
+                      doctorMoreData ? 'Doctor requested data' :
+                        'Routed to doctor queue'
+              )}
+            </p>
+          </div>
+        </div>
+        )}
+
+        {/* Dynamic Route Content */}
+        {currentPath === '/patient/reports' ? (
+          <MyReportsList />
+        ) : currentPath === '/patient/history' ? (
+          <PatientHistoryTimeline />
+        ) : currentPath === '/patient/appointments' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
+            </div>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Upcoming Appointments</h3>
+            <div className="space-y-3">
+              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center bg-slate-50 medtwin-hover-glow">
+                <div>
+                  <p className="font-bold text-slate-900">Dr. Saubhik Bhaumik</p>
+                  <p className="text-xs text-slate-500">Endocrinology Follow-up</p>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>SHA-256 Hash:</span>
-                  <span className="text-slate-200 truncate max-w-[200px]">e3b0c44298fc1c149afbf4c8996fb924</span>
-                </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Block Number:</span>
-                  <span className="text-slate-200">#14,258,902</span>
+                <div className="text-right">
+                  <p className="font-bold text-sky-600">Aug 15, 2026</p>
+                  <p className="text-xs text-slate-500">10:00 AM</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-400">
-                Only the cryptographic hash goes on-chain — raw patient data never leaves our encrypted database (Slide 25).
+              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center medtwin-hover-glow">
+                <div>
+                  <p className="font-bold text-slate-900">Dr. Anita Patel</p>
+                  <p className="text-xs text-slate-500">Annual Wellness Check</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-slate-700">Sep 02, 2026</p>
+                  <p className="text-xs text-slate-500">02:30 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : currentPath === '/patient/messages' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
+            </div>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Secure Inbox</h3>
+            <div className="space-y-3">
+              <div className="p-4 border border-sky-200 rounded-xl bg-sky-50 cursor-pointer hover:bg-sky-100 transition-colors medtwin-card-clickable">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="font-bold text-sky-900">Dr. Saubhik Bhaumik</p>
+                  <span className="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full font-bold">New</span>
+                </div>
+                <p className="text-sm font-semibold text-slate-800">Regarding your recent HbA1c results</p>
+                <p className="text-xs text-slate-500 truncate mt-1">Please make sure to review the AI analysis and start the recommended diet changes...</p>
+              </div>
+              <div className="p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors medtwin-card-clickable">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="font-bold text-slate-700">Billing Department</p>
+                  <span className="text-[10px] text-slate-500">2 days ago</span>
+                </div>
+                <p className="text-sm font-semibold text-slate-800">Invoice #4029 Available</p>
+                <p className="text-xs text-slate-500 truncate mt-1">Your latest invoice has been generated and is ready for payment.</p>
+              </div>
+            </div>
+          </div>
+        ) : currentPath === '/patient/billing' ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
+              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
+            </div>
+            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Billing & Claims</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                    <th className="p-3 font-bold">Date</th>
+                    <th className="p-3 font-bold">Description</th>
+                    <th className="p-3 font-bold">Amount</th>
+                    <th className="p-3 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-slate-50">
+                    <td className="p-3 text-slate-600">Aug 01, 2026</td>
+                    <td className="p-3 font-medium text-slate-800">Comprehensive Blood Panel</td>
+                    <td className="p-3 text-slate-600">$120.00</td>
+                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Due</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="p-3 text-slate-600">Jul 15, 2026</td>
+                    <td className="p-3 font-medium text-slate-800">General Consultation</td>
+                    <td className="p-3 text-slate-600">$85.00</td>
+                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Paid</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : loadingInitial ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-sky-500 mb-4" />
+            <h3 className="text-slate-900 font-bold text-sm">Loading Twin Telemetry...</h3>
+          </div>
+        ) : !result ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="text-lg font-bold text-slate-900">
+                Upload Medical Report
+              </h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Upload a blood test PDF, prescription, or lab scan to run the 6 AI Agents.
+              </p>
+            </div>
+
+            <ReportUpload 
+              onResult={setResult} 
+              onBlockchainData={(id, bc) => {
+                setReportId(id);
+                setBcData(bc);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  AI Agent Analysis Results
+                </h2>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Showing structured output focused on target Agent module.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setResult(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-all"
+              >
+                <RotateCcw className="w-4 h-4 text-sky-500" />
+                <span>Upload Another Report</span>
+              </button>
+            </div>
+
+            <AgentResults result={result} initialTab={activeAgentTab} />
+          </div>
+        )}
+
+        {/* Functional Blockchain Integration Component */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm medtwin-hover-glow">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-sky-500" />
+            <div className="text-sm">
+              <p className="text-slate-900 font-bold">Polygon SHA-256 Audit Log</p>
+              <p className="text-slate-500 text-xs">
+                Status: {bcData ? 'Verified / Active' : 'No Data'}
+                {bcData && ` • Tx: ${bcData.tx_hash.substring(0, 10)}...`}
               </p>
             </div>
           </div>
-
-          <div className="pt-4 border-t border-navy-700/80 flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-teal-400" /> Last record verified 2h ago
-            </span>
-            <span className="text-teal-400 font-mono">Tx 0x8f...3a1</span>
-          </div>
+          <button
+            onClick={handleBlockchainVerify}
+            disabled={!reportId}
+            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-sm transition-all disabled:opacity-50"
+          >
+            Verify & Download Original
+          </button>
         </div>
-      </div>
+      </main>
+
+      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+        MedTwin AI Platform · Decision-support prototype · Not a substitute for professional medical advice
+      </footer>
     </div>
   );
 }
