@@ -53,7 +53,7 @@ jobs:
 
             echo "Creating required env file to prevent docker crash..."
             mkdir -p ai
-            touch ai/.env
+            echo 'GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"' > ai/.env
 
             echo "Setting up production API URL for the frontend..."
             echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_IP }}:5173" > frontend/.env.production
