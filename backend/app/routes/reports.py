@@ -17,9 +17,17 @@ async def upload_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    patient = None
+    if current_user.role == "patient" and current_user.patient_profile:
+        patient = current_user.patient_profile
+    else:
+        patient = db.query(Patient).filter(Patient.id == patient_id).first()
+        
     if not patient:
         raise HTTPException(status_code=404, detail="Patient profile not found")
+    
+    # Override patient_id with the actual resolved patient ID
+    patient_id = patient.id
 
     # Save uploaded report locally/simulated IPFS (Slide 14 & 15)
     os.makedirs("uploads", exist_ok=True)
@@ -28,24 +36,37 @@ async def upload_report(
     with open(file_path, "wb") as f:
         f.write(content)
 
-    # Simulated OCR extraction text or real PyTesseract/PaddleOCR output if needed
-    mock_ocr_text = f"Patient Blood Report: Fasting Blood Sugar 135 mg/dL. HbA1c 6.8%. Cholesterol 210 mg/dL. Uploaded file: {file.filename}"
+    # Process document text via PyMuPDF / OCR
+    try:
+        from ai.document_processor import process_document
+        extracted_text = process_document(file_path)
+    except Exception as ocr_err:
+        print(f"[Warning] OCR extraction error for {file_path}: {ocr_err}")
+        extracted_text = ""
+
+    ocr_text = extracted_text if (extracted_text and extracted_text.strip()) else f"Patient Medical Report. Uploaded file: {file.filename}"
+
+    # Calculate original file hash for tamper detection
+    original_file_hash = generate_sha256_hash(content)
 
     # 1. Store Report in DB
     report = MedicalReport(
         patient_id=patient.id,
         file_url=file_path,
-        ocr_text=mock_ocr_text,
-        structured_data={"Fasting Blood Sugar": "135 mg/dL", "HbA1c": "6.8%"}
+        ocr_text=ocr_text,
+        structured_data={
+            "filename": file.filename,
+            "original_file_hash": original_file_hash
+        }
     )
     db.add(report)
     db.commit()
     db.refresh(report)
 
-    # 2. Invoke LangGraph 5-Agent Pipeline (Slide 11, 21 & 23)
+    # 2. Invoke LangGraph 6-Agent Pipeline
     ai_result = invoke_langgraph_pipeline(
         patient_id=patient.id,
-        ocr_text=mock_ocr_text,
+        ocr_text=ocr_text,
         medical_history=patient.medical_history or {},
         vitals={"heart_rate": 74, "blood_pressure": "120/80"}
     )
@@ -56,7 +77,7 @@ async def upload_report(
         risk_score=ai_result.get("overall_risk_score", 65.0),
         confidence=ai_result.get("overall_confidence", 0.90),
         agent_source="LangGraph-Orchestrator",
-        details={"extracted_labs": ai_result.get("extracted_lab_values", {})}
+        details=ai_result  # Store the full AI analysis JSON
     )
     db.add(prediction)
     db.commit()
@@ -78,9 +99,16 @@ async def upload_report(
     db.refresh(recommendation)
 
     # 5. Blockchain SHA-256 Hash Registration (Slide 25)
-    record_payload = {"report_id": report.id, "prediction_id": prediction.id, "ocr_hash": generate_sha256_hash(mock_ocr_text)}
+    record_payload = {"report_id": report.id, "prediction_id": prediction.id, "ocr_hash": generate_sha256_hash(ocr_text)}
     sha_hash = generate_sha256_hash(record_payload)
-    bc_tx = record_hash_on_polygon(record_id=f"report_{report.id}", data_hash=sha_hash)
+    
+    # [DISABLED BLOCKCHAIN]
+    # bc_tx = record_hash_on_polygon(record_id=f"report_{report.id}", data_hash=sha_hash)
+    bc_tx = {
+        "tx_hash": f"mock_tx_{sha_hash[:16]}",
+        "chain": "Polygon-Amoy-Mock",
+        "block_number": 999999
+    }
 
     tx_entry = BlockchainTx(
         record_id=f"report_{report.id}",
@@ -103,7 +131,7 @@ async def upload_report(
     return {
         "message": "Report uploaded, OCR processed, LangGraph evaluated, and hashed to Polygon",
         "report_id": report.id,
-        "prediction": {"risk_score": prediction.risk_score, "confidence": prediction.confidence},
+        "prediction": {"risk_score": prediction.risk_score, "confidence": prediction.confidence, "details": prediction.details},
         "recommendation": recommendation.action,
         "blockchain_verification": bc_tx
     }

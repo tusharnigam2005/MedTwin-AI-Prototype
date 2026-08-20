@@ -8,6 +8,10 @@ router = APIRouter()
 
 @router.get("/{patient_id}", summary="Fetch full verified medical history and audit trail (Slide 33)")
 def get_medical_history(patient_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Resolve the correct patient ID (frontend might pass user.id instead of patient.id)
+    if current_user.role == "patient" and current_user.patient_profile:
+        patient_id = current_user.patient_profile.id
+        
     reports = db.query(MedicalReport).filter(MedicalReport.patient_id == patient_id).all()
     predictions = db.query(Prediction).filter(Prediction.patient_id == patient_id).all()
     
@@ -23,7 +27,7 @@ def get_medical_history(patient_id: int, db: Session = Depends(get_db), current_
             for r in reports
         ],
         "predictions": [
-            {"id": p.id, "risk_score": p.risk_score, "confidence": p.confidence, "created_at": p.created_at}
+            {"id": p.id, "risk_score": p.risk_score, "confidence": p.confidence, "created_at": p.created_at, "details": p.details}
             for p in predictions
         ],
         "blockchain_verification_trail": [
