@@ -36,7 +36,7 @@ export default function DoctorDashboard() {
       setQueue(res.data);
     } catch (err) {
       console.error('Failed to fetch doctor queue', err);
-    } fontally {
+    } finally {
       setLoadingQueue(false);
     }
   };
