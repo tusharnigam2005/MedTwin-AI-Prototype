@@ -18,7 +18,7 @@ export default function PatientDashboard() {
   const location = useLocation();
   const [result, setResult] = useState(null);
   const [recStatus, setRecStatus] = useState('none');
-  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [loadingInitial, setLoadingInitial] = useState(false);
   const [reportId, setReportId] = useState(null);
   const [bcData, setBcData] = useState(null);
 
@@ -40,27 +40,6 @@ export default function PatientDashboard() {
 
   // Numeric patient ID from user
   const numericPatientId = user?.id ? user.id.replace(/\D/g, '') : '1';
-
-  useEffect(() => {
-    const fetchLatestPrediction = async () => {
-      try {
-        setLoadingInitial(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const res = await axios.get(`${baseUrl}/api/prediction/${numericPatientId}`);
-        if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
-          setResult(res.data.details);
-          setRecStatus(res.data.recommendation_status || 'none');
-          if (res.data.latest_report_id) setReportId(res.data.latest_report_id);
-          if (res.data.blockchain_verification) setBcData(res.data.blockchain_verification);
-        }
-      } catch (err) {
-        console.error('No previous predictions found or error fetching:', err);
-      } finally {
-        setLoadingInitial(false);
-      }
-    };
-    fetchLatestPrediction();
-  }, [numericPatientId]);
 
   const handleBlockchainVerify = async () => {
     if (!reportId) return alert('No report found to verify.');
