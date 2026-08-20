@@ -36,7 +36,7 @@ export default function DoctorDashboard() {
       setQueue(res.data);
     } catch (err) {
       console.error('Failed to fetch doctor queue', err);
-    } finally {
+    } fontally {
       setLoadingQueue(false);
     }
   };
@@ -308,7 +308,7 @@ export default function DoctorDashboard() {
               />
             </div>
 
-            {/* Patient Queue Table (Section 19 requirement) */}
+            {/* Patient Queue Table */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
               <h3 className="text-slate-900 font-bold text-base">Patient Review Queue</h3>
 

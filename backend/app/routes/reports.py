@@ -46,18 +46,12 @@ async def upload_report(
 
     ocr_text = extracted_text if (extracted_text and extracted_text.strip()) else f"Patient Medical Report. Uploaded file: {file.filename}"
 
-    # Calculate original file hash for tamper detection
-    original_file_hash = generate_sha256_hash(content)
-
     # 1. Store Report in DB
     report = MedicalReport(
         patient_id=patient.id,
         file_url=file_path,
         ocr_text=ocr_text,
-        structured_data={
-            "filename": file.filename,
-            "original_file_hash": original_file_hash
-        }
+        structured_data={"filename": file.filename}
     )
     db.add(report)
     db.commit()
@@ -68,7 +62,8 @@ async def upload_report(
         patient_id=patient.id,
         ocr_text=ocr_text,
         medical_history=patient.medical_history or {},
-        vitals={"heart_rate": 74, "blood_pressure": "120/80"}
+        vitals={"heart_rate": 74, "blood_pressure": "120/80"},
+        patient_name=patient.user.email.split('@')[0].replace('.', ' ').title() if (patient.user and patient.user.email) else "Demo Patient"
     )
 
     # 3. Store Prediction in DB

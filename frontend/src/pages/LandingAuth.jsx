@@ -43,10 +43,10 @@ export default function LandingAuth() {
   const getApiBaseUrl = () => {
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
       if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return `http://${window.location.hostname}:8000`;
+        return `http://${window.location.hostname}:8001`;
       }
     }
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
   };
 
   const handleSubmit = async (e) => {
@@ -229,7 +229,7 @@ export default function LandingAuth() {
             <span className="text-2xl font-bold tracking-tight text-white flex items-center gap-1.5">
               MedTwin <span className="text-teal-400">AI</span>
             </span>
-            <span className="text-xs text-slate-400 block font-medium">Multi-Agent Healthcare Platform</span>
+            <span className="text-xs text-slate-400 block font-medium">Autonomous Healthcare Digital Twin</span>
           </div>
         </div>
 

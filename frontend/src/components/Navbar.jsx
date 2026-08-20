@@ -20,13 +20,6 @@ export default function Navbar() {
     navigate('/');
   };
 
-  const handleRoleSwitch = (newRole) => {
-    login(user?.name, newRole);
-    if (newRole === 'doctor') navigate('/doctor');
-    else if (newRole === 'admin') navigate('/admin');
-    else navigate('/patient');
-  };
-
   const isPatient = user?.role === 'patient';
   const isDoctor = user?.role === 'doctor';
   const isAdmin = user?.role === 'admin';
@@ -56,7 +49,7 @@ export default function Navbar() {
               </span>
             </div>
             <p className="text-[10px] text-slate-500 font-medium hidden sm:block">
-              AI-Powered Personalized Healthcare
+              AI-Powered Autonomous Healthcare Platform
             </p>
           </div>
         </div>

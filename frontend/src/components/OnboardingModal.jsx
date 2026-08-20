@@ -34,10 +34,10 @@ export default function OnboardingModal({ user, onComplete }) {
 
     const fetchProfile = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
         const response = await fetch(`${baseUrl}/api/patient/profile`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('medtwin_token') || localStorage.getItem('medtwin_jwt')}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
@@ -120,12 +120,12 @@ export default function OnboardingModal({ user, onComplete }) {
     };
 
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
       const response = await fetch(`${baseUrl}/api/patient/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('medtwin_token') || localStorage.getItem('medtwin_jwt')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(payload)
       });

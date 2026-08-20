@@ -9,11 +9,10 @@ from .graph import medtwin_graph
 # Supports PDF / JPG / JPEG / PNG
 # =========================================================
 
-file_path = (
-    "/Users/satyamgupta/Desktop/another_desktop/"
-    "MedTwin-AI-Prototype-main/"
-    "reports_samples/synthetic_medical_report.pdf"
-)
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(BASE_DIR, "reports_samples", "synthetic_medical_report.pdf")
 
 
 def main():

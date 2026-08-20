@@ -10,9 +10,7 @@ import AnimatedSection from '../components/AnimatedSection';
 import MyReportsList from '../components/MyReportsList';
 import PatientHistoryTimeline from '../components/PatientHistoryTimeline';
 import { useAuth } from '../context/AuthContext';
-import {
-  RotateCcw, Shield, Loader2, Sparkles, FileText, Calendar
-} from 'lucide-react';
+import { RotateCcw, Shield, Loader2, Sparkles } from 'lucide-react';
 import axios from 'axios';
 
 export default function PatientDashboard() {
@@ -29,6 +27,16 @@ export default function PatientDashboard() {
   const currentPath = location.pathname.replace(/\/$/, '');
 
   let activeAgentTab = 'all';
+
+  if (currentPath === '/patient/reports') {
+    activeAgentTab = 'agent1';
+  } else if (currentPath === '/patient/health') {
+    activeAgentTab = 'agent2';
+  } else if (currentPath === '/patient/medications') {
+    activeAgentTab = 'agent4';
+  } else if (currentPath === '/patient/recommendations') {
+    activeAgentTab = 'agent5';
+  }
 
   // Numeric patient ID from user
   const numericPatientId = user?.id ? user.id.replace(/\D/g, '') : '1';

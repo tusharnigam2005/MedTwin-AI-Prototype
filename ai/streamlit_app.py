@@ -452,6 +452,45 @@ if uploaded_file is not None:
                 "🔍 Current Health Risk Analysis"
             )
 
+            score = health_analysis.get("health_score")
+            if score is not None and isinstance(score, (int, float)):
+                if score < 40:
+                    bg_color = "#dc2626"
+                    label = "Critical Health Score — Urgent clinical evaluation required"
+                    icon = "🚨"
+                elif score < 55:
+                    bg_color = "#f43f5e"
+                    label = "Significant Risk Score — Multiple health concerns detected"
+                    icon = "⚠️"
+                elif score < 70:
+                    bg_color = "#65a30d"
+                    label = "Moderate Health Score — Notable risk factors present"
+                    icon = "🌱"
+                elif score < 85:
+                    bg_color = "#16a34a"
+                    label = "Good Health Score — Strong overall medical markers"
+                    icon = "🌿"
+                else:
+                    bg_color = "#059669"
+                    label = "Optimal Health Score — Minimal risk indicators"
+                    icon = "✨"
+
+                st.markdown(
+                    f"""
+                    <div style="background: {bg_color}; color: white; padding: 20px 24px; border-radius: 16px; margin-bottom: 24px; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 14px rgba(0,0,0,0.12);">
+                        <div>
+                            <div style="font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9;">{icon} MedTwin Overall Health Score</div>
+                            <div style="font-size: 36px; font-weight: 900; margin: 4px 0; line-height: 1;">{int(score)} <span style="font-size: 16px; font-weight: 600; opacity: 0.8;">/ 100</span></div>
+                            <div style="font-size: 13px; font-weight: 500; opacity: 0.95;">{label}</div>
+                        </div>
+                        <div style="font-size: 28px; font-weight: 900; background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.3); width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            {int(score)}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
             risks = health_analysis.get(
                 "risk_assessments",
                 []

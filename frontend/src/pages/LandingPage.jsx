@@ -31,10 +31,10 @@ export default function LandingPage() {
   const getApiBaseUrl = () => {
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
       if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return `http://${window.location.hostname}:8000`;
+        return `http://${window.location.hostname}:8001`;
       }
     }
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
   };
 
   const handleSubmit = async (e) => {
@@ -154,7 +154,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <h1 className="text-xl font-extrabold tracking-tight font-sans">MedTwin AI</h1>
-                <p className="text-xs text-sky-100 font-medium">AI-Powered Personalized Healthcare</p>
+                <p className="text-xs text-sky-100 font-medium">Autonomous Healthcare Platform</p>
               </div>
             </div>
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
                 {/* Patient Role Card */}
                 <div
                   onClick={() => setSelectedRole('patient')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between medtwin-card-clickable ${selectedRole === 'patient'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'patient'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
@@ -250,7 +250,7 @@ export default function LandingPage() {
                 {/* Doctor Role Card */}
                 <div
                   onClick={() => setSelectedRole('doctor')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between medtwin-card-clickable ${selectedRole === 'doctor'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'doctor'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
@@ -274,7 +274,7 @@ export default function LandingPage() {
                 {/* Admin Role Card */}
                 <div
                   onClick={() => setSelectedRole('admin')}
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between medtwin-card-clickable ${selectedRole === 'admin'
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${selectedRole === 'admin'
                       ? 'border-sky-500 bg-sky-50/60 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}

@@ -144,7 +144,7 @@ export default function LangGraphAgentsPanel() {
             <div
               key={agent.id}
               onClick={() => setSelectedAgent(agent)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative group overflow-hidden medtwin-card-clickable ${
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative group overflow-hidden ${
                 isSelected
                   ? 'bg-gradient-to-b from-navy-800 to-navy-900 border-teal-400 shadow-xl shadow-teal-500/10 ring-1 ring-teal-400/50 scale-[1.02]'
                   : 'bg-navy-900/60 border-navy-700/60 hover:border-navy-600 hover:bg-navy-800/50'

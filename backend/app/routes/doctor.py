@@ -18,29 +18,16 @@ def get_doctor_queue(
     db: Session = Depends(get_db),
     current_doctor: User = Depends(require_role("doctor"))
 ):
-    # Fetch all recommendations (pending and approved) ordered by newest first
-    pending = db.query(Recommendation).order_by(Recommendation.created_at.desc()).all()
+    # Fetch pending recommendations joined with prediction and patient
+    pending = db.query(Recommendation).filter(Recommendation.status == "pending_doctor_review").all()
     
     queue = []
-    from app.models.schema import MedicalReport
-
     for rec in pending:
         prediction = rec.prediction
         patient = prediction.patient
         patient_user = patient.user if patient else None
         p_name = patient_user.email.split('@')[0].replace('.', ' ').title() if (patient_user and patient_user.email) else f"Patient #{patient.id}"
         
-        # Fetch latest report for the patient
-        latest_report = db.query(MedicalReport).filter(MedicalReport.patient_id == patient.id).order_by(MedicalReport.uploaded_at.desc()).first()
-        
-        bc_verification = None
-        latest_report_id = None
-        if latest_report:
-            latest_report_id = latest_report.id
-            tx = db.query(BlockchainTx).filter(BlockchainTx.record_id == f"report_{latest_report.id}").first()
-            if tx:
-                bc_verification = {"tx_hash": tx.tx_hash, "status": "confirmed"}
-
         queue.append({
             "id": rec.id,
             "patient_name": p_name,
@@ -49,8 +36,6 @@ def get_doctor_queue(
             "confidence": prediction.confidence,
             "ai_recommendation": rec.action,
             "details": prediction.details,
-            "latest_report_id": latest_report_id,
-            "blockchain_verification": bc_verification,
             "created_at": rec.created_at.strftime("%Y-%m-%d %H:%M") if rec.created_at else "2026-07-25",
             "status": rec.status
         })
@@ -67,8 +52,6 @@ def get_doctor_queue(
                 "ai_recommendation": "Elevated HbA1c (7.8%) and fasting blood glucose (145 mg/dL). Prescribe low GI diet and schedule follow-up lab panel.",
                 "created_at": "2026-07-25 14:00",
                 "status": "pending_doctor_review",
-                "latest_report_id": 1,
-                "blockchain_verification": {"tx_hash": "mock_tx_abc123", "status": "confirmed"},
                 "details": {
                     "medical_report": {
                         "patient": {"name": "Rahul Sharma", "age": 45, "gender": "Male"},

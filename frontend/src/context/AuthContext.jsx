@@ -25,8 +25,6 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('medtwin_auth_user');
-    localStorage.removeItem('medtwin_token');
-    localStorage.removeItem('medtwin_jwt');
     setUser(null);
   };
 
