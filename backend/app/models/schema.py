@@ -19,6 +19,8 @@ class User(Base):
     # Relationships
     patient_profile = relationship("Patient", back_populates="user", uselist=False)
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
+    sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
+    received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
 
 
 class Patient(Base):
@@ -34,6 +36,7 @@ class Patient(Base):
     user = relationship("User", back_populates="patient_profile")
     reports = relationship("MedicalReport", back_populates="patient")
     predictions = relationship("Prediction", back_populates="patient")
+    appointments = relationship("Appointment", back_populates="patient")
 
 
 class Doctor(Base):
@@ -47,6 +50,7 @@ class Doctor(Base):
     # Relationships
     user = relationship("User", back_populates="doctor_profile")
     approved_recommendations = relationship("Recommendation", back_populates="doctor")
+    appointments = relationship("Appointment", back_populates="doctor")
 
 
 class MedicalReport(Base):
@@ -115,3 +119,36 @@ class BlockchainTx(Base):
     chain = Column(String(50), default="Polygon-Amoy")
     block_number = Column(Integer, nullable=True)
     verified_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    doctor_id = Column(Integer, ForeignKey("doctors.id", ondelete="CASCADE"), nullable=False)
+    date = Column(String(20), nullable=False)
+    time = Column(String(10), nullable=False)
+    reason = Column(String(255), nullable=True)
+    status = Column(String(50), default="pending")  # pending, approved, rescheduled, cancelled
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    patient = relationship("Patient", back_populates="appointments")
+    doctor = relationship("Doctor", back_populates="appointments")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    receiver_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    subject = Column(String(255), nullable=True)
+    content = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")

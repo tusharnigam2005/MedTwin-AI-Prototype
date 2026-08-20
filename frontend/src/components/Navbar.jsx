@@ -106,6 +106,14 @@ export default function Navbar() {
               <Stethoscope className="w-3.5 h-3.5" />
               <span>Pending Approvals</span>
             </NavLink>
+            <NavLink to="/doctor/appointments" className={linkClass}>
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Appointments</span>
+            </NavLink>
+            <NavLink to="/doctor/messages" className={linkClass}>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Messages</span>
+            </NavLink>
           </nav>
         )}
 
@@ -194,6 +202,8 @@ export default function Navbar() {
               <NavLink to="/doctor" end onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Patient Queue</NavLink>
               <NavLink to="/doctor/history" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Medical History</NavLink>
               <NavLink to="/doctor/approvals" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Pending Approvals</NavLink>
+              <NavLink to="/doctor/appointments" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Appointments</NavLink>
+              <NavLink to="/doctor/messages" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-700">Messages</NavLink>
             </div>
           )}
           {isAdmin && (

@@ -69,7 +69,7 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
 
       setStatusStep('Processing AI analysis...');
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const response = await axios.post(`${baseUrl}/api/reports/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -107,11 +107,13 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => !file && !loading && inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${dragging ? 'border-sky-500 bg-sky-50' :
-            file ? 'border-sky-300 bg-sky-50/50 cursor-default' :
-              'border-slate-300 hover:border-sky-400 bg-white hover:bg-sky-50/30'
+        className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all duration-300 cursor-pointer relative overflow-hidden ${
+          dragging ? 'border-sky-400 bg-sky-50/80 scale-[1.02]' :
+            file ? 'border-sky-200 bg-slate-50/50 cursor-default' :
+              'border-slate-300 hover:border-sky-400 bg-white/50 hover:bg-white backdrop-blur-sm shadow-sm hover:shadow-md'
           }`}
       >
+        {dragging && <div className="absolute inset-0 bg-sky-400/10 animate-pulse-slow" />}
         <input
           ref={inputRef}
           type="file"
@@ -121,37 +123,37 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
         />
 
         {file ? (
-          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600">
-                {file.type === 'application/pdf' ? <FileText className="w-5 h-5" /> : <Image className="w-5 h-5" />}
+          <div className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl p-5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] relative z-10 animate-scale-in">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 flex items-center justify-center text-sky-600 shadow-inner">
+                {file.type === 'application/pdf' ? <FileText className="w-6 h-6" /> : <Image className="w-6 h-6" />}
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-800 text-sm">{file.name}</p>
-                <p className="text-slate-500 text-xs">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                <p className="font-bold text-slate-800 text-sm tracking-tight">{file.name}</p>
+                <p className="text-slate-500 text-xs font-medium">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
             </div>
 
             {!loading && (
               <button
                 onClick={(e) => { e.stopPropagation(); setFile(null); setError(''); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 font-semibold text-xs border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-slate-500 hover:text-red-500 font-bold text-xs bg-slate-50 hover:bg-red-50 transition-colors"
               >
-                <X className="w-3 h-3" />
-                <span>Change File</span>
+                <X className="w-4 h-4" />
+                <span>Remove</span>
               </button>
             )}
           </div>
         ) : (
-          <div className="py-4 space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-2">
-              <Upload className="w-6 h-6" />
+          <div className="py-6 space-y-3 relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-50 text-sky-600 flex items-center justify-center mx-auto mb-4 shadow-sm border border-white">
+              <Upload className="w-8 h-8" />
             </div>
-            <p className="text-slate-800 font-semibold text-sm">
-              Drag & Drop Medical Report / Lab Prescription
+            <p className="text-slate-900 font-bold text-base">
+              Drag & Drop Medical Report
             </p>
-            <p className="text-slate-500 text-xs">
-              Supports PDF, JPG, JPEG, PNG (max 25 MB)
+            <p className="text-slate-500 text-xs font-medium">
+              Supports PDF, JPG, PNG up to 25 MB
             </p>
           </div>
         )}
@@ -165,16 +167,27 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
         </div>
       )}
 
-      {/* Loading Status */}
+      {/* Premium Loading Spinner */}
       {loading && (
-        <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-2 text-xs text-sky-800">
-          <div className="flex items-center gap-2 font-semibold">
-            <Loader2 className="w-4 h-4 animate-spin text-sky-600" />
-            <span>{statusStep}</span>
+        <div className="glass-panel rounded-2xl p-6 text-center space-y-4 animate-scale-in border border-sky-200 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-sky-100/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" style={{ animationName: 'shimmer', animationDuration: '2s', animationIterationCount: 'infinite' }} />
+          
+          <div className="relative inline-flex items-center justify-center w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-4 border-sky-100" />
+            <div className="absolute inset-0 rounded-full border-4 border-sky-500 border-t-transparent animate-spin" />
+            <div className="absolute inset-0 bg-sky-500/20 rounded-full animate-pulse-slow blur-md" />
           </div>
-          <div className="w-full bg-sky-200 rounded-full h-1.5 overflow-hidden">
-            <div className="h-full bg-sky-500 rounded-full w-2/3 animate-pulse" />
+          
+          <div>
+            <p className="font-extrabold text-slate-900 text-sm">{statusStep}</p>
+            <p className="text-xs text-sky-600 font-semibold mt-1 animate-pulse">Running 6-Agent AI Pipeline...</p>
           </div>
+          
+          <style>{`
+            @keyframes shimmer {
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
         </div>
       )}
 
@@ -182,7 +195,7 @@ export default function ReportUpload({ onResult, onBlockchainData }) {
       {file && !loading && (
         <button
           onClick={processReport}
-          className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-600 hover:to-indigo-600 text-white font-bold text-sm shadow-[0_8px_16px_-6px_rgba(14,165,233,0.5)] hover:shadow-[0_12px_20px_-8px_rgba(14,165,233,0.6)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 animate-scale-in"
         >
           <span>Run MedTwin AI Analysis</span>
         </button>
