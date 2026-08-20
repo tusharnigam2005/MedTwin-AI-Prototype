@@ -16,7 +16,7 @@ export default function MyReportsList() {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const res = await axios.get(`${baseUrl}/api/history/${numericPatientId}`);
         setHistoryData(res.data);
       } catch (err) {
@@ -30,7 +30,7 @@ export default function MyReportsList() {
 
   const handleDownload = async (reportId) => {
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       // First verify
       const verifyRes = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
       if (verifyRes.data.is_match) {

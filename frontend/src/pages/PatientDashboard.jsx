@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
 import AgentResults from '../components/AgentResults';
 import MyReportsList from '../components/MyReportsList';
 import PatientHistoryTimeline from '../components/PatientHistoryTimeline';
+import AppointmentsList from '../components/AppointmentsList';
+import MessagesList from '../components/MessagesList';
 import { useAuth } from '../context/AuthContext';
 import {
-  HeartPulse, Upload, RotateCcw, Activity, TrendingUp,
-  FileText, Shield, CheckCircle2, Clock, Loader2
+  Activity, TrendingUp, FileText, CheckCircle2, HeartPulse, Droplet, Heart, Brain, Microscope, ScanFace
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -49,16 +50,14 @@ export default function PatientDashboard() {
     pageSub = 'Chronological history of processed reports, doctor sign-offs, and blockchain verification.';
   }
 
-  // Extract numeric patient ID from 'PT-101' format
   const numericPatientId = user?.id ? user.id.replace(/\D/g, '') : '1';
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchLatestPrediction = async () => {
       try {
         setLoadingInitial(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const res = await axios.get(`${baseUrl}/api/prediction/${numericPatientId}`);
-        // If the backend returns a prediction with details, use it
         if (res.data && res.data.details && Object.keys(res.data.details).length > 0) {
           setResult(res.data.details);
           setRecStatus(res.data.recommendation_status || "none");
@@ -80,39 +79,26 @@ export default function PatientDashboard() {
   const doctorEscalated = recStatus === "escalated";
   const doctorMoreData = recStatus === "more_data";
 
-  const handleBlockchainVerify = async () => {
-    if (!reportId) return alert('No report found to verify.');
-    try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const res = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
-      if (res.data.is_match) {
-        alert('✅ Blockchain Verification Successful! The file matches the Polygon Smart Contract hash perfectly. Downloading now...');
-        window.open(`${baseUrl}/api/blockchain/download/${reportId}`, '_blank');
-      } else {
-        alert('🔴 Blockchain Verification Failed: The file has been modified or tampered with.');
-      }
-    } catch (err) {
-      alert(err.response?.data?.detail || 'Verification error');
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-100/50 flex flex-col font-sans relative overflow-hidden">
+      {/* Decorative Background Elements for Glassmorphism */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-sky-200/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[30rem] h-[30rem] bg-indigo-100/40 rounded-full blur-3xl pointer-events-none" />
+
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-
+        
         {/* Top Greeting */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 font-sans">
+            <h1 className="text-3xl font-extrabold text-slate-900 font-sans tracking-tight">
               {pageTitle}
             </h1>
-            <p className="text-slate-500 text-xs mt-1">
+            <p className="text-slate-500 text-sm mt-1">
               {pageSub}
             </p>
           </div>
-
           <div className="flex items-center gap-2">
             <span className="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-sky-500" />
@@ -121,139 +107,14 @@ export default function PatientDashboard() {
           </div>
         </div>
 
-        {/* Top Summary Cards (Only show on main dashboard) */}
-        {currentPath === '/patient' && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-          {/* Health Analysis Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-xs font-bold uppercase">Health Analysis</span>
-              <Activity className="w-4 h-4 text-sky-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">
-              {result ? 'Report Analyzed' : 'Baseline Active'}
-            </p>
-            <p className="text-slate-500 text-xs">
-              {result ? '6 AI agents processed' : 'Upload a report to generate AI analysis'}
-            </p>
-          </div>
-
-          {/* Current Risk Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-xs font-bold uppercase">Current Risk</span>
-              <TrendingUp className="w-4 h-4 text-sky-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 capitalize">
-              {result ? triageLevel : 'Low Risk'}
-            </p>
-            <p className="text-slate-500 text-xs">
-              {result ? 'From latest report data' : 'Multi-factor baseline'}
-            </p>
-          </div>
-
-          {/* Latest Report Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-xs font-bold uppercase">Latest Report</span>
-              <FileText className="w-4 h-4 text-sky-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">
-              {result ? 'CBC / Blood Test' : 'No Report'}
-            </p>
-            <p className="text-slate-500 text-xs">
-              {result ? result.medical_report?.report_date || 'Processed today' : 'Awaiting document upload'}
-            </p>
-          </div>
-
-          {/* Doctor Review Status Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-xs font-bold uppercase">Doctor Review Status</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">
-              {!result ? 'Up to Date' : (
-                doctorApproved ? 'Approved' :
-                  doctorRejected ? 'Rejected' :
-                    doctorEscalated ? 'Escalated' :
-                      doctorMoreData ? 'Data Requested' :
-                        'Pending Sign-Off'
-              )}
-            </p>
-            <p className="text-slate-500 text-xs">
-              {!result ? 'No pending reviews' : (
-                doctorApproved ? 'Verified by your doctor' :
-                  doctorRejected ? 'Doctor flagged issues' :
-                    doctorEscalated ? 'Doctor escalated case' :
-                      doctorMoreData ? 'Doctor requested data' :
-                        'Routed to doctor queue'
-              )}
-            </p>
-          </div>
-        </div>
-        )}
-
-        {/* Dynamic Route Content */}
         {currentPath === '/patient/reports' ? (
           <MyReportsList />
         ) : currentPath === '/patient/history' ? (
           <PatientHistoryTimeline />
         ) : currentPath === '/patient/appointments' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
-              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
-            </div>
-            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Upcoming Appointments</h3>
-            <div className="space-y-3">
-              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center bg-slate-50">
-                <div>
-                  <p className="font-bold text-slate-900">Dr. Saubhik Bhaumik</p>
-                  <p className="text-xs text-slate-500">Endocrinology Follow-up</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-sky-600">Aug 15, 2026</p>
-                  <p className="text-xs text-slate-500">10:00 AM</p>
-                </div>
-              </div>
-              <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center">
-                <div>
-                  <p className="font-bold text-slate-900">Dr. Anita Patel</p>
-                  <p className="text-xs text-slate-500">Annual Wellness Check</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-700">Sep 02, 2026</p>
-                  <p className="text-xs text-slate-500">02:30 PM</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AppointmentsList />
         ) : currentPath === '/patient/messages' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
-              <span className="font-bold">Demo Note:</span> This section is currently displaying mock data for demonstration purposes.
-            </div>
-            <h3 className="text-slate-900 font-bold text-lg border-b border-slate-100 pb-2">Secure Inbox</h3>
-            <div className="space-y-3">
-              <div className="p-4 border border-sky-200 rounded-xl bg-sky-50 cursor-pointer hover:bg-sky-100 transition-colors">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-sky-900">Dr. Saubhik Bhaumik</p>
-                  <span className="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full font-bold">New</span>
-                </div>
-                <p className="text-sm font-semibold text-slate-800">Regarding your recent HbA1c results</p>
-                <p className="text-xs text-slate-500 truncate mt-1">Please make sure to review the AI analysis and start the recommended diet changes...</p>
-              </div>
-              <div className="p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-slate-700">Billing Department</p>
-                  <span className="text-[10px] text-slate-500">2 days ago</span>
-                </div>
-                <p className="text-sm font-semibold text-slate-800">Invoice #4029 Available</p>
-                <p className="text-xs text-slate-500 truncate mt-1">Your latest invoice has been generated and is ready for payment.</p>
-              </div>
-            </div>
-          </div>
+          <MessagesList />
         ) : currentPath === '/patient/billing' ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
             <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
@@ -273,94 +134,114 @@ export default function PatientDashboard() {
                 <tbody className="divide-y divide-slate-100">
                   <tr className="hover:bg-slate-50">
                     <td className="p-3 text-slate-600">Aug 01, 2026</td>
-                    <td className="p-3 font-medium text-slate-800">Comprehensive Blood Panel</td>
-                    <td className="p-3 text-slate-600">$120.00</td>
-                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Due</span></td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="p-3 text-slate-600">Jul 15, 2026</td>
-                    <td className="p-3 font-medium text-slate-800">General Consultation</td>
-                    <td className="p-3 text-slate-600">$85.00</td>
-                    <td className="p-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Paid</span></td>
+                    <td className="p-3 font-bold text-slate-800">Complete Blood Count (CBC)</td>
+                    <td className="p-3 text-slate-900 font-medium">$45.00</td>
+                    <td className="p-3">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Paid</span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-        ) : loadingInitial ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto text-sky-500 mb-4" />
-            <h3 className="text-slate-900 font-bold text-sm">Loading Twin Telemetry...</h3>
-          </div>
-        ) : !result ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Upload Medical Report
-              </h2>
-              <p className="text-slate-500 text-xs mt-0.5">
-                Upload a blood test PDF, prescription, or lab scan to run the 6 AI Agents.
-              </p>
-            </div>
-
-            <ReportUpload 
-              onResult={setResult} 
-              onBlockchainData={(id, bc) => {
-                setReportId(id);
-                setBcData(bc);
-              }}
-            />
-          </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">
-                  AI Agent Analysis Results
-                </h2>
-                <p className="text-slate-500 text-xs mt-0.5">
-                  Showing structured output focused on target Agent module.
+            
+            {/* Top Summary Cards */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Health Analysis</span>
+                  <Activity className="w-4 h-4 text-sky-500" />
+                </div>
+                <p className="text-2xl font-bold text-slate-900 leading-tight">
+                  {result ? 'Report Analyzed' : 'Baseline Active'}
+                </p>
+                <p className="text-slate-500 text-xs">
+                  {result ? '6 AI agents processed' : 'Upload a report to generate AI analysis'}
+                </p>
+              </div>
+              
+              <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Current Risk</span>
+                  <TrendingUp className="w-4 h-4 text-sky-500" />
+                </div>
+                <p className="text-2xl font-bold text-slate-900 leading-tight capitalize">
+                  {result ? triageLevel : 'Low Risk'}
+                </p>
+                <p className="text-slate-500 text-xs">
+                  {result ? 'From latest report data' : 'Multi-factor baseline'}
                 </p>
               </div>
 
-              <button
-                onClick={() => setResult(null)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-all"
-              >
-                <RotateCcw className="w-4 h-4 text-sky-500" />
-                <span>Upload Another Report</span>
-              </button>
+              <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Latest Report</span>
+                  <FileText className="w-4 h-4 text-sky-500" />
+                </div>
+                <p className="text-2xl font-bold text-slate-900 leading-tight">
+                  {result ? 'CBC / Blood Test' : 'No Report'}
+                </p>
+                <p className="text-slate-500 text-xs">
+                  {result ? result?.medical_report?.report_date || 'Processed today' : 'Awaiting document upload'}
+                </p>
+              </div>
+
+              <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-400">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Doctor Review Status</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                </div>
+                <p className="text-2xl font-bold text-slate-900 leading-tight">
+                  {!result ? 'Up to Date' : (
+                    doctorApproved ? 'Approved' :
+                      doctorRejected ? 'Rejected' :
+                        doctorEscalated ? 'Escalated' :
+                          doctorMoreData ? 'Data Requested' :
+                            'Pending Sign-Off'
+                  )}
+                </p>
+                <p className="text-slate-500 text-xs">
+                  {!result ? 'No pending reviews' : (
+                    doctorApproved ? 'Verified by your doctor' :
+                      doctorRejected ? 'Doctor flagged issues' :
+                        doctorEscalated ? 'Doctor escalated case' :
+                          doctorMoreData ? 'Doctor requested data' :
+                            'Routed to doctor queue'
+                  )}
+                </p>
+              </div>
             </div>
 
-            <AgentResults result={result} initialTab={activeAgentTab} />
+            {/* Upload Area for Patient */}
+            <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-500">
+              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-slate-900 font-bold text-base">Upload Medical Report</h3>
+                  <p className="text-slate-500 text-xs mt-0.5">Upload a blood test PDF, prescription, or lab scan to run the 6 AI Agents.</p>
+                </div>
+              </div>
+              <ReportUpload 
+                onResult={setResult} 
+                onBlockchainData={(id, bc) => {
+                  setReportId(id);
+                  setBcData(bc);
+                }}
+              />
+            </div>
+
+            {/* AI Results */}
+            {result && (
+              <div className="mt-8 animate-fade-in delay-200">
+                 <AgentResults result={result} />
+              </div>
+            )}
+
           </div>
         )}
 
-        {/* Functional Blockchain Integration Component */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-sky-500" />
-            <div className="text-sm">
-              <p className="text-slate-900 font-bold">Polygon SHA-256 Audit Log</p>
-              <p className="text-slate-500 text-xs">
-                Status: {bcData ? 'Verified / Active' : 'No Data'}
-                {bcData && ` • Tx: ${bcData.tx_hash.substring(0, 10)}...`}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleBlockchainVerify}
-            disabled={!reportId}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-sm transition-all disabled:opacity-50"
-          >
-            Verify & Download Original
-          </button>
-        </div>
       </main>
-
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        MedTwin AI Platform · Decision-support prototype · Not a substitute for professional medical advice
-      </footer>
     </div>
   );
 }

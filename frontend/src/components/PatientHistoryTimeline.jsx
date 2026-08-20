@@ -14,7 +14,7 @@ export default function PatientHistoryTimeline() {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const res = await axios.get(`${baseUrl}/api/history/${numericPatientId}`);
         const data = res.data;
 

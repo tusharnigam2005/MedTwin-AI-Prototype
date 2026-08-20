@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ReportUpload from '../components/ReportUpload';
 import AgentResults from '../components/AgentResults';
+import AppointmentsList from '../components/AppointmentsList';
+import MessagesList from '../components/MessagesList';
 import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, CheckCircle2, AlertTriangle, Flag,
@@ -31,7 +33,7 @@ export default function DoctorDashboard() {
   const fetchQueue = async () => {
     try {
       setLoadingQueue(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const res = await axios.get(`${baseUrl}/api/doctor/queue`);
       setQueue(res.data);
     } catch (err) {
@@ -55,7 +57,7 @@ export default function DoctorDashboard() {
   const handleBlockchainVerify = async () => {
     if (!reportId) return alert('No report found to verify.');
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const res = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
       if (res.data.is_match) {
         alert('✅ Blockchain Verification Successful! The file matches the Polygon Smart Contract hash perfectly. Downloading now...');
@@ -72,7 +74,7 @@ export default function DoctorDashboard() {
     if (!selectedPatient) return;
     try {
       setActionLoading(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       await axios.post(`${baseUrl}/api/doctor/approve/${selectedPatient.id}`, {
         action_status: status
       });
@@ -86,7 +88,11 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex flex-col font-sans relative overflow-hidden">
+      {/* Decorative Background Elements for Glassmorphism */}
+      <div className="absolute top-[5%] right-[-10%] w-[40rem] h-[40rem] bg-indigo-200/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-sky-200/30 rounded-full blur-3xl pointer-events-none" />
+
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -118,7 +124,7 @@ export default function DoctorDashboard() {
         {/* Summary Metrics Cards */}
         {currentPath === '/doctor' && !result && !selectedPatient && (
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-100">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">Pending Reviews</span>
                 <Users className="w-4 h-4 text-sky-500" />
@@ -127,7 +133,7 @@ export default function DoctorDashboard() {
               <p className="text-slate-500 text-xs">Patient cases awaiting sign-off</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-200">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">High-Risk Cases</span>
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -138,7 +144,7 @@ export default function DoctorDashboard() {
               <p className="text-slate-500 text-xs">Require priority clinical review</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="glass-panel rounded-2xl p-5 space-y-2 animate-fade-in delay-300">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">Total Patients Reviewed</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -151,7 +157,7 @@ export default function DoctorDashboard() {
 
         {/* Dynamic Route Content */}
         {currentPath === '/doctor/history' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-200">
             <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
               <span className="font-bold">Demo Note:</span> This section is currently displaying mock directory data for demonstration purposes.
             </div>
@@ -197,7 +203,7 @@ export default function DoctorDashboard() {
                     Array.from(new Set(queue.map(q => q.patient_id))).map(uniqueId => {
                       const latestRecord = queue.find(q => q.patient_id === uniqueId);
                       return (
-                        <tr key={uniqueId} className="hover:bg-slate-50">
+                        <tr key={uniqueId} className="hover:bg-white/60 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer border-b border-slate-50 last:border-0">
                           <td className="p-3 font-bold text-slate-900">{latestRecord.patient_name}</td>
                           <td className="p-3 text-slate-500">{uniqueId}</td>
                           <td className="p-3 text-slate-600">{latestRecord.created_at}</td>
@@ -220,7 +226,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
         ) : currentPath === '/doctor/approvals' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-200">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
               <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
                 <Stethoscope className="w-5 h-5 text-emerald-500" />
@@ -259,7 +265,7 @@ export default function DoctorDashboard() {
                     </tr>
                   ) : (
                     approvedQueue.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50">
+                      <tr key={item.id} className="hover:bg-white/60 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer border-b border-slate-50 last:border-0">
                         <td className="p-3 font-bold text-slate-800 whitespace-nowrap">
                           {item.patient_name} <span className="text-slate-400 font-normal">(ID: {item.patient_id})</span>
                         </td>
@@ -290,11 +296,15 @@ export default function DoctorDashboard() {
               </table>
             </div>
           </div>
+        ) : currentPath === '/doctor/appointments' ? (
+          <AppointmentsList />
+        ) : currentPath === '/doctor/messages' ? (
+          <MessagesList />
         ) : !result && !selectedPatient ? (
           <div className="space-y-6">
 
             {/* Upload Area for Doctor */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-100">
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="text-slate-900 font-bold text-sm">Upload Patient Report for Direct Review</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Upload a report file to process through the AI agents and review output.</p>
@@ -309,7 +319,7 @@ export default function DoctorDashboard() {
             </div>
 
             {/* Patient Queue Table (Section 19 requirement) */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-200">
               <h3 className="text-slate-900 font-bold text-base">Patient Review Queue</h3>
 
               <div className="overflow-x-auto">
@@ -340,7 +350,7 @@ export default function DoctorDashboard() {
                       </tr>
                     ) : (
                       (showAllQueue ? pendingQueue : pendingQueue.slice(0, 3)).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50">
+                        <tr key={item.id} className="hover:bg-white/60 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer border-b border-slate-50 last:border-0">
                           <td className="p-3 font-bold text-slate-800 whitespace-nowrap">
                             {item.patient_name} <span className="text-slate-400 font-normal">(ID: {item.patient_id})</span>
                           </td>
@@ -384,7 +394,7 @@ export default function DoctorDashboard() {
           <div className="space-y-6">
 
             {/* Doctor Review Actions Bar */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="glass-panel rounded-2xl p-6 space-y-4 animate-fade-in delay-100">
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
@@ -487,7 +497,7 @@ export default function DoctorDashboard() {
         )}
 
         {/* Functional Blockchain Integration Component */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm">
+        <div className="glass-panel rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 animate-fade-in delay-400 relative z-10">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-sky-500" />
             <div className="text-sm">

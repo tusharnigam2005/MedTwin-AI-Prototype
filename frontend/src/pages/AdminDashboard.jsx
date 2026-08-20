@@ -19,7 +19,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
         const res = await axios.get(`${baseUrl}/api/admin/stats`);
         setStats(res.data);
       } catch (err) {
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       setUsersLoading(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const res = await axios.get(`${baseUrl}/api/admin/users`);
       setUsers(res.data);
     } catch (err) {
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   const fetchLogs = async () => {
     try {
       setLogsLoading(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
       const res = await axios.get(`${baseUrl}/api/admin/logs`);
       setLogs(res.data);
     } catch (err) {
