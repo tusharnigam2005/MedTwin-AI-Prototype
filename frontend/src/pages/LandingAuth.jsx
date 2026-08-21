@@ -41,7 +41,12 @@ export default function LandingAuth() {
   };
 
   const getApiBaseUrl = () => {
-    return import.meta.env.VITE_API_BASE_URL || '';
+    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return `http://${window.location.hostname}:8001`;
+      }
+    }
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
   };
 
   const handleSubmit = async (e) => {
@@ -142,7 +147,7 @@ export default function LandingAuth() {
     } catch (err) {
       console.warn('Real backend call error, falling back if offline:', err.message);
       // If backend is unreachable on localhost or errored out, automatically enter Local Offline Demo Mode!
-      if (err.message.includes('Failed to fetch')) {
+      if (err.message.includes('Failed to fetch') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         setError('⚡ Local Backend Offline — Auto-entering Offline Demo Mode...');
         setTimeout(() => {
           const fallbackName = formData.fullName || (formData.email ? formData.email.split('@')[0] : 'Tushar Nigam');

@@ -9,4 +9,68 @@
   .border-sky-light {
     border-color: #E0F2FE;
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-none {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Consistent MedTwin Hover Highlight and Soft Glow (Non-clickable) */
+  .medtwin-hover-glow {
+    transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .medtwin-hover-glow:hover {
+    border-color: #38bdf8 !important; /* sky-400 */
+    box-shadow: 0 4px 16px -2px rgba(14, 165, 233, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  /* Clickable MedTwin Hover Highlight, Subtle Lift, Soft Glow, and Pointer */
+  .medtwin-card-clickable {
+    cursor: pointer;
+    transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .medtwin-card-clickable:hover {
+    border-color: #0ea5e9 !important; /* sky-500 */
+    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15), 0 4px 6px -2px rgba(14, 165, 233, 0.08) !important;
+    transform: translateY(-2px) !important;
+  }
+}
+
+/* Scroll background experience: Top (light white/sky) -> Middle (light blue) -> Bottom (light teal) */
+.medtwin-scroll-gradient {
+  background-color: #FAFDFE;
+  background-image: linear-gradient(
+    180deg,
+    #FAFDFE 0%,
+    #F0F7FF 35%,
+    #EBF6FF 65%,
+    #F0FDF9 100%
+  );
+  background-size: 100% 100%;
+  background-attachment: fixed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medtwin-scroll-gradient { background-attachment: scroll; }
+}
+
+.medtwin-motion > main > * {
+  animation: medtwin-fade-up 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.medtwin-motion > main > *:nth-child(2) { animation-delay: 60ms; }
+.medtwin-motion > main > *:nth-child(3) { animation-delay: 100ms; }
+.medtwin-motion > main > *:nth-child(4) { animation-delay: 140ms; }
+
+@keyframes medtwin-fade-up {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medtwin-motion > main > * { animation: none !important; }
 }

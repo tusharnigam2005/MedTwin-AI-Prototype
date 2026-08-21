@@ -16,7 +16,7 @@ export default function MyReportsList() {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const res = await axios.get(`${baseUrl}/api/history/${numericPatientId}`);
         setHistoryData(res.data);
       } catch (err) {
@@ -30,7 +30,7 @@ export default function MyReportsList() {
 
   const handleDownload = async (reportId) => {
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       // First verify
       const verifyRes = await axios.get(`${baseUrl}/api/blockchain/verify/${reportId}`);
       if (verifyRes.data.is_match) {
@@ -88,7 +88,7 @@ export default function MyReportsList() {
           });
 
           return (
-            <div key={report.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+            <div key={report.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full medtwin-hover-glow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
