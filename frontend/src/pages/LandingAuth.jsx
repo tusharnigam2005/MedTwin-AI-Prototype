@@ -55,8 +55,31 @@ export default function LandingAuth() {
       return;
     }
 
-    if (!isLoginMode && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+    if (!isLoginMode) {
+      if (!formData.fullName) {
+        setError('Please enter your full name.');
+        setLoading(false);
+        return;
+      }
+      if (formData.password.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        setLoading(false);
+        return;
+      }
+      if (!/\d/.test(formData.password) || !/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+        setError('Password must contain at least one number and one special character.');
+        setLoading(false);
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match.');
+        setLoading(false);
+        return;
+      }
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address.');
       setLoading(false);
       return;
     }
@@ -141,78 +164,32 @@ export default function LandingAuth() {
       }
     } catch (err) {
       console.warn('Real backend call error, falling back if offline:', err.message);
-      // If backend is unreachable on localhost or errored out, automatically enter Local Offline Demo Mode!
-      if (err.message.includes('Failed to fetch')) {
-        setError('⚡ Local Backend Offline — Auto-entering Offline Demo Mode...');
-        setTimeout(() => {
-          const fallbackName = formData.fullName || (formData.email ? formData.email.split('@')[0] : 'Tushar Nigam');
-          setGlobalUser(fallbackName.toUpperCase(), role);
-          
-          if (role === 'doctor') navigate('/doctor');
-          else if (role === 'admin') navigate('/admin');
-          else navigate('/patient');
-        }, 1000);
-        return;
-      }
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickDemo = async (demoRole) => {
-    setLoading(true);
-    setError('');
-    const demoCredentials = {
-      patient: { email: 'umang@medtwin.ai', password: 'patient123', name: 'Umang Sharma' },
-      doctor: { email: 'doctor@medtwin.ai', password: 'doctor123', name: 'Dr. Aarav Patel' }
-    };
-    const target = demoCredentials[demoRole] || demoCredentials.patient;
-
-    try {
-      const BASE_URL = getApiBaseUrl();
-      const bodyParams = new URLSearchParams();
-      bodyParams.append('username', target.email);
-      bodyParams.append('password', target.password);
-
-      const res = await fetch(`${BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: bodyParams
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('medtwin_token', data.access_token);
-        localStorage.setItem('medtwin_jwt', data.access_token);
-        
-        setGlobalUser(target.name, demoRole);
-        
-        if (demoRole === 'doctor') navigate('/doctor');
-        else if (demoRole === 'admin') navigate('/admin');
-        else navigate('/patient');
-        
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      console.warn('Demo login failed against API:', err);
-    }
-
-    // Seamless fallback if backend not running
-    setGlobalUser(target.name, demoRole);
-    if (demoRole === 'doctor') navigate('/doctor');
-    else if (demoRole === 'admin') navigate('/admin');
-    else navigate('/patient');
-    
-    setLoading(false);
-  };
-
   return (
-    <div className="min-h-screen bg-navy-900 text-slate-100 flex flex-col justify-between relative overflow-hidden">
-      {/* Background Decorative Glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between relative overflow-hidden medtwin-motion">
+      {/* Background covering full height, blue on left and purple on right fading to white in the middle */}
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-sky-200/80 via-white/60 to-purple-200/80 z-0 pointer-events-none" />
+
+      {/* Premium Glassmorphic Healthcare Watermarks (Full Page) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[5%] left-[-2%] w-[400px] h-[400px] opacity-70 rotate-12">
+          <div className="absolute top-1/2 left-0 w-full h-[100px] -mt-[50px] bg-gradient-to-tr from-sky-300/20 to-white/40 rounded-[40px] backdrop-blur-3xl border border-white/60 shadow-xl" />
+          <div className="absolute left-1/2 top-0 w-[100px] h-full -ml-[50px] bg-gradient-to-tr from-sky-300/20 to-white/40 rounded-[40px] backdrop-blur-3xl border border-white/60 shadow-xl" />
+        </div>
+        <div className="absolute top-[15%] right-[5%] w-[300px] h-[120px] rounded-[100px] bg-gradient-to-br from-purple-300/20 to-white/30 backdrop-blur-3xl border-2 border-white/50 rotate-[45deg] shadow-lg flex items-center justify-center overflow-hidden opacity-70">
+          <div className="w-[3px] h-full bg-white/60" />
+          <div className="absolute top-2 left-6 w-[100px] h-[20px] bg-white/40 blur-lg rounded-full" />
+        </div>
+        <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[250px] rounded-[150px] bg-gradient-to-br from-purple-300/20 to-white/30 backdrop-blur-3xl border-2 border-white/50 rotate-[-35deg] shadow-2xl flex items-center justify-center overflow-hidden opacity-70">
+          <div className="w-[4px] h-full bg-white/60" />
+          <div className="absolute top-4 left-10 w-[200px] h-[40px] bg-white/40 blur-xl rounded-full" />
+        </div>
+      </div>
 
       {/* Top Brand Header */}
       <header className="max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between relative z-10">
@@ -277,16 +254,16 @@ export default function LandingAuth() {
 
         {/* Right Column: Interactive Auth Card (Swappable UI template for Frontend Team) */}
         <div className="lg:col-span-5">
-          <div className="glass-card p-6 sm:p-8 border-navy-700 shadow-2xl relative bg-navy-800/90 backdrop-blur-xl">
+          <div className="p-6 sm:p-8 rounded-3xl bg-white/70 backdrop-blur-3xl border border-white/60 shadow-2xl relative ring-1 ring-black/5">
             {/* Login vs Create Account Switcher */}
-            <div className="flex rounded-xl bg-navy-900/80 p-1 border border-navy-700 mb-6">
+            <div className="flex rounded-xl bg-slate-100/50 p-1 mb-6 border border-white/50 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={() => { setIsLoginMode(true); setError(''); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
                   isLoginMode 
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md' 
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-sky-600 shadow-md border border-slate-200/50' 
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Login
@@ -296,8 +273,8 @@ export default function LandingAuth() {
                 onClick={() => { setIsLoginMode(false); setError(''); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
                   !isLoginMode 
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-navy-900 shadow-md' 
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-purple-600 shadow-md border border-slate-200/50' 
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Create Account
@@ -307,44 +284,44 @@ export default function LandingAuth() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Role Selection Tabs */}
               <div>
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
                   Select Your Portal Role
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setRole('patient')}
-                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 text-xs font-bold transition-all ${
                       role === 'patient'
-                        ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                        : 'bg-navy-900/50 border-navy-700 text-slate-400 hover:border-navy-600'
+                        ? 'bg-sky-50 border-sky-400 text-sky-600 shadow-sm'
+                        : 'bg-white/50 border-transparent text-slate-500 hover:border-slate-200'
                     }`}
                   >
-                    <UserCheck className="w-4 h-4 mb-1" />
+                    <UserCheck className="w-5 h-5 mb-1.5" />
                     <span>Patient</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setRole('doctor')}
-                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 text-xs font-bold transition-all ${
                       role === 'doctor'
-                        ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                        : 'bg-navy-900/50 border-navy-700 text-slate-400 hover:border-navy-600'
+                        ? 'bg-purple-50 border-purple-400 text-purple-600 shadow-sm'
+                        : 'bg-white/50 border-transparent text-slate-500 hover:border-slate-200'
                     }`}
                   >
-                    <Stethoscope className="w-4 h-4 mb-1" />
+                    <Stethoscope className="w-5 h-5 mb-1.5" />
                     <span>Doctor</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setRole('admin')}
-                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 text-xs font-bold transition-all ${
                       role === 'admin'
-                        ? 'bg-teal-500/20 border-teal-500 text-teal-300'
-                        : 'bg-navy-900/50 border-navy-700 text-slate-400 hover:border-navy-600'
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-600 shadow-sm'
+                        : 'bg-white/50 border-transparent text-slate-500 hover:border-slate-200'
                     }`}
                   >
-                    <ShieldCheck className="w-4 h-4 mb-1" />
+                    <ShieldCheck className="w-5 h-5 mb-1.5" />
                     <span>Admin</span>
                   </button>
                 </div>
@@ -443,41 +420,6 @@ export default function LandingAuth() {
                 )}
               </button>
             </form>
-
-            {/* Instant Local Demo Bypass Section (No Account Needed) */}
-            <div className="mt-6 pt-5 border-t border-navy-700/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono uppercase font-bold text-teal-400 tracking-wider bg-teal-500/10 px-2.5 py-0.5 rounded border border-teal-500/20 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-pulse" /> Local Testing Bypass
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">Zero Login Needed</span>
-              </div>
-              <p className="text-xs text-slate-300">
-                Testing UI locally? Click below to immediately bypass login and enter enterprise dashboards right now:
-              </p>
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('patient')}
-                  disabled={loading}
-                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-emerald-500/20 hover:from-teal-500/30 hover:to-emerald-500/30 border border-teal-500/40 text-teal-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                >
-                  <UserCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Test Patient Twin</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('doctor')}
-                  disabled={loading}
-                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-teal-500/20 hover:from-cyan-500/30 hover:to-teal-500/30 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                >
-                  <Stethoscope className="w-4 h-4 text-cyan-400" />
-                  <span>Test Doctor Portal</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
         </div>
       </main>
 

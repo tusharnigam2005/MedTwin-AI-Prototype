@@ -1,56 +1,40 @@
 import os
 import fitz
-# Lazy OCR instance
-_ocr = None
-
-def get_ocr():
-    global _ocr
-    if _ocr is None:
-        try:
-            from paddleocr import PaddleOCR
-            _ocr = PaddleOCR(lang="en")
-        except Exception as err:
-            raise RuntimeError(
-                f"PaddleOCR failed to initialize: {err}. "
-                "Ensure paddlepaddle and paddleocr are installed properly or use text-based PDFs."
-            )
-    return _ocr
-
+from google import genai
+from google.genai import types
 
 def extract_text_with_ocr(image_path: str) -> str:
     """
-    Extract text from an image using PaddleOCR.
+    Extract text from an image using Google Gemini Vision.
     """
-
     try:
-        ocr_engine = get_ocr()
-        result = ocr_engine.predict(image_path)
-
-        extracted_lines = []
-
-        for page_result in result:
-
-            # PaddleOCR returns recognized text in rec_texts
-            data = page_result.json
-
-            if "res" in data:
-                texts = data["res"].get("rec_texts", [])
-
-                extracted_lines.extend(texts)
-
-        text = "\n".join(extracted_lines)
-
-        if not text.strip():
-            raise ValueError(
-                "OCR could not detect any text."
-            )
-
-        return text.strip()
-
-    except Exception as error:
-        raise RuntimeError(
-            f"OCR failed: {error}"
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY not found in environment.")
+            
+        client = genai.Client(api_key=api_key)
+        
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+            
+        ext = os.path.splitext(image_path)[1].lower()
+        mime_type = "image/jpeg" if ext in [".jpg", ".jpeg"] else "image/png"
+        
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite",
+            contents=[
+                types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                "Extract all the text from this image exactly as written. Just output the text without any conversational filler."
+            ]
         )
+        
+        text = response.text
+        if not text or not text.strip():
+            raise ValueError("OCR could not detect any text.")
+            
+        return text.strip()
+    except Exception as error:
+        raise RuntimeError(f"OCR via Gemini failed: {error}")
 
 
 def extract_text_from_pdf(file_path: str) -> str:
