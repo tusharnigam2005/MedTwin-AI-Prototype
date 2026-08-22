@@ -1,4 +1,5 @@
 import os
+from typing import List
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -10,10 +11,10 @@ from app.services.recommendation_service import merge_agent_recommendations
 
 router = APIRouter()
 
-@router.post("/upload", summary="Upload a medical report for OCR + AI processing (Slide 33)")
+@router.post("/upload", summary="Upload medical reports for OCR + AI processing (Slide 33)")
 async def upload_report(
     patient_id: int = Form(...),
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -29,34 +30,41 @@ async def upload_report(
     # Override patient_id with the actual resolved patient ID
     patient_id = patient.id
 
-    # Save uploaded report locally/simulated IPFS (Slide 14 & 15)
+    # Save uploaded reports locally and process OCR for all
     os.makedirs("uploads", exist_ok=True)
-    file_path = f"uploads/{patient_id}_{file.filename}"
-    content = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
+    ocr_texts = []
+    combined_content = b""
+    primary_filename = files[0].filename if files else "unknown_document"
+    
+    for f in files:
+        file_path = f"uploads/{patient_id}_{f.filename}"
+        content = await f.read()
+        combined_content += content
+        with open(file_path, "wb") as f_out:
+            f_out.write(content)
+            
+        try:
+            from ai.document_processor import process_document
+            extracted_text = process_document(file_path)
+            ocr_texts.append(f"--- Document: {f.filename} ---\n{extracted_text}")
+        except Exception as ocr_err:
+            print(f"[Warning] OCR extraction error for {file_path}: {ocr_err}")
+            ocr_texts.append(f"--- Document: {f.filename} ---\n[Failed to extract text]")
 
-    # Process document text via PyMuPDF / OCR
-    try:
-        from ai.document_processor import process_document
-        extracted_text = process_document(file_path)
-    except Exception as ocr_err:
-        print(f"[Warning] OCR extraction error for {file_path}: {ocr_err}")
-        extracted_text = ""
+    ocr_text = "\n\n".join(ocr_texts) if ocr_texts else f"Patient Medical Report. Uploaded files."
 
-    ocr_text = extracted_text if (extracted_text and extracted_text.strip()) else f"Patient Medical Report. Uploaded file: {file.filename}"
+    # Calculate original file hash for tamper detection (using combined bytes)
+    original_file_hash = generate_sha256_hash(combined_content)
 
-    # Calculate original file hash for tamper detection
-    original_file_hash = generate_sha256_hash(content)
-
-    # 1. Store Report in DB
+    # 1. Store Report in DB (using first file as primary record)
     report = MedicalReport(
         patient_id=patient.id,
-        file_url=file_path,
+        file_url=f"uploads/{patient_id}_{primary_filename}",
         ocr_text=ocr_text,
         structured_data={
-            "filename": file.filename,
-            "original_file_hash": original_file_hash
+            "filename": primary_filename,
+            "original_file_hash": original_file_hash,
+            "total_files": len(files)
         }
     )
     db.add(report)

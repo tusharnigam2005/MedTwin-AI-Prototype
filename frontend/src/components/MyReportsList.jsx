@@ -88,7 +88,7 @@ export default function MyReportsList() {
           });
 
           return (
-            <div key={report.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+            <div key={report.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full medtwin-hover-glow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">

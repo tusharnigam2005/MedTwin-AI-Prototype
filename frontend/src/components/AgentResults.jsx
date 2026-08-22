@@ -42,7 +42,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
     }
     return (
       <span className="px-3 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1">
-        ✓ ROUTINE FOLLOW-UP
+        ✅ ROUTINE FOLLOW-UP
       </span>
     );
   };
@@ -89,7 +89,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         ))}
       </div>
 
-      {/* ── AGENT 6: EMERGENCY RESPONSE SUMMARY BANNER (Shown on All & Emergency) ── */}
+      {/* ΓöÇΓöÇ AGENT 6: EMERGENCY RESPONSE SUMMARY BANNER (Shown on All & Emergency) ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent6') && (
         <div className={`bg-white border rounded-2xl p-6 shadow-sm space-y-4 ${
           triageLevel === 'emergency' ? 'border-red-300 bg-red-50/40' :
@@ -112,7 +112,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
             <div className="bg-sky-50/60 border border-sky-100 rounded-xl p-4 space-y-1">
               <p className="font-semibold text-slate-500">Emergency Services Needed:</p>
               <p className={`font-bold text-sm ${emergency.emergency_services_needed ? 'text-red-600' : 'text-emerald-700'}`}>
-                {emergency.emergency_services_needed ? '🚨 YES — IMMEDIATE ATTENTION REQUIRED' : '✓ Not Required'}
+                {emergency.emergency_services_needed ? '🚨 YES — IMMEDIATE ATTENTION REQUIRED' : '✅ Not Required'}
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         </div>
       )}
 
-      {/* ── AGENT 1: MEDICAL REPORT AGENT ── */}
+      {/* ΓöÇΓöÇ AGENT 1: MEDICAL REPORT AGENT ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent1') && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -256,7 +256,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         </div>
       )}
 
-      {/* ── AGENT 2: HEALTH PREDICTION AGENT ── */}
+      {/* ΓöÇΓöÇ AGENT 2: HEALTH PREDICTION AGENT ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent2') && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -347,7 +347,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         </div>
       )}
 
-      {/* ── AGENT 3: HEALTH FORECAST AGENT ── */}
+      {/* ΓöÇΓöÇ AGENT 3: HEALTH FORECAST AGENT ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent3') && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -419,7 +419,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         </div>
       )}
 
-      {/* ── AGENT 4: MEDICATION AGENT ── */}
+      {/* ΓöÇΓöÇ AGENT 4: MEDICATION AGENT ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent4') && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -484,7 +484,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
         </div>
       )}
 
-      {/* ── AGENT 5: LIFESTYLE AGENT ── */}
+      {/* ΓöÇΓöÇ AGENT 5: LIFESTYLE AGENT ΓöÇΓöÇ */}
       {(activeTab === 'all' || activeTab === 'agent5') && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
