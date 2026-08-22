@@ -3,8 +3,9 @@ import {
   Upload, Sparkles, FileText, Activity, TrendingUp,
   Pill, HeartHandshake, ShieldAlert, ShieldCheck
 } from 'lucide-react';
+import ReportUpload from './ReportUpload';
 
-export default function EmptyState({ onUploadClick }) {
+export default function EmptyState({ onResult, onBlockchainData }) {
   const agents = [
     { icon: FileText, emoji: '🧪', title: 'Medical Report', desc: 'Parses lab values, symptoms & clinical diagnoses' },
     { icon: Activity, emoji: '❤️', title: 'Health Risk', desc: 'Evaluates chronic risk factors & confidence levels' },
@@ -17,7 +18,7 @@ export default function EmptyState({ onUploadClick }) {
   return (
     <div className="space-y-6">
       {/* Hero Empty Banner */}
-      <div className="bg-gradient-to-b from-white to-sky-50/40 border border-slate-200/80 rounded-2xl p-8 sm:p-10 text-center shadow-xs space-y-6 medtwin-hover-glow transition-all">
+      <div className="bg-gradient-to-b from-white to-sky-50/40 border border-slate-200/80 rounded-2xl p-6 sm:p-8 text-center shadow-xs space-y-6 medtwin-hover-glow transition-all">
         <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-200 text-sky-600 flex items-center justify-center mx-auto shadow-xs">
           <Sparkles className="w-8 h-8 text-sky-500 animate-pulse" />
         </div>
@@ -31,15 +32,9 @@ export default function EmptyState({ onUploadClick }) {
           </p>
         </div>
 
-        {/* Action Button */}
-        <div className="flex items-center justify-center">
-          <button
-            onClick={onUploadClick}
-            className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Upload Medical Report</span>
-          </button>
+        {/* Action Button / Dropzone */}
+        <div className="w-full max-w-2xl mx-auto">
+          <ReportUpload onResult={onResult} onBlockchainData={onBlockchainData} />
         </div>
 
         {/* Security Note */}

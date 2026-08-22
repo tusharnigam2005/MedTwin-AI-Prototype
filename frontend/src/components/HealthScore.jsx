@@ -107,15 +107,7 @@ export default function HealthScore({ result, onUploadClick }) {
           </div>
         </div>
 
-        {onUploadClick && (
-          <button
-            onClick={onUploadClick}
-            className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 shrink-0"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Upload Medical Report</span>
-          </button>
-        )}
+
       </div>
     );
   }

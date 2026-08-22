@@ -41,15 +41,14 @@
   }
 }
 
-/* Scroll background experience: Top (light white/sky) -> Middle (light blue) -> Bottom (light teal) */
+/* Scroll background experience: Left (pale yellow) -> Right (white) */
 .medtwin-scroll-gradient {
-  background-color: #FAFDFE;
-  background-image: linear-gradient(
-    180deg,
-    #FAFDFE 0%,
-    #F0F7FF 35%,
-    #EBF6FF 65%,
-    #F0FDF9 100%
+  background-color: #ffffff;
+  background-image: radial-gradient(
+    100% 100% at 0% 0%,
+    rgba(254, 240, 138, 0.6) 0%, /* Yellow intensity at top-left */
+    rgba(255, 255, 255, 1) 45%, /* Blends to white */
+    rgba(255, 255, 255, 1) 100%
   );
   background-size: 100% 100%;
   background-attachment: fixed;

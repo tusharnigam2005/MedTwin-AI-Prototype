@@ -86,15 +86,49 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <Navbar />
+    <div className="min-h-screen bg-slate-50 medtwin-motion flex flex-col font-sans text-slate-900 relative">
+      {/* Background covering full height, blue on left and purple on right fading to white in the middle */}
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-sky-200/80 via-white/60 to-purple-200/80 z-0 pointer-events-none" />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+      {/* Premium Glassmorphic Healthcare Watermarks (Full Page) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {/* 1. Top Left: Giant Medical Cross */}
+        <div className="absolute top-[5%] left-[-2%] w-[400px] h-[400px] opacity-70 rotate-12">
+          <div className="absolute top-1/2 left-0 w-full h-[100px] -mt-[50px] bg-gradient-to-tr from-sky-300/20 to-white/40 rounded-[40px] backdrop-blur-3xl border border-white/60 shadow-xl" />
+          <div className="absolute left-1/2 top-0 w-[100px] h-full -ml-[50px] bg-gradient-to-tr from-sky-300/20 to-white/40 rounded-[40px] backdrop-blur-3xl border border-white/60 shadow-xl" />
+        </div>
+        {/* 2. Top Right: Small Pill */}
+        <div className="absolute top-[15%] right-[5%] w-[300px] h-[120px] rounded-[100px] bg-gradient-to-br from-purple-300/20 to-white/30 backdrop-blur-3xl border-2 border-white/50 rotate-[45deg] shadow-lg flex items-center justify-center overflow-hidden opacity-70">
+          <div className="w-[3px] h-full bg-white/60" />
+          <div className="absolute top-2 left-6 w-[100px] h-[20px] bg-white/40 blur-lg rounded-full" />
+        </div>
+        {/* 3. Center Left: Abstract Floating Cell */}
+        <div className="absolute top-[45%] left-[5%] w-[250px] h-[250px] rounded-full bg-gradient-to-tr from-sky-300/20 to-purple-300/20 backdrop-blur-3xl border-2 border-white/50 shadow-xl opacity-70" />
+        {/* 4. Center Right: Secondary Medical Cross */}
+        <div className="absolute top-[60%] right-[-2%] w-[250px] h-[250px] opacity-70 rotate-[-15deg]">
+          <div className="absolute top-1/2 left-0 w-full h-[60px] -mt-[30px] bg-gradient-to-tr from-purple-300/20 to-white/40 rounded-[30px] backdrop-blur-3xl border border-white/60" />
+          <div className="absolute left-1/2 top-0 w-[60px] h-full -ml-[30px] bg-gradient-to-tr from-purple-300/20 to-white/40 rounded-[30px] backdrop-blur-3xl border border-white/60" />
+        </div>
+        {/* 5. Bottom Left: Another Small Pill */}
+        <div className="absolute bottom-[15%] left-[8%] w-[250px] h-[100px] rounded-[100px] bg-gradient-to-br from-sky-300/20 to-white/30 backdrop-blur-3xl border-2 border-white/50 rotate-[-60deg] shadow-lg flex items-center justify-center overflow-hidden opacity-70">
+          <div className="w-[3px] h-full bg-white/60" />
+        </div>
+        {/* 6. Bottom Right: Giant Capsule/Pill */}
+        <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[250px] rounded-[150px] bg-gradient-to-br from-purple-300/20 to-white/30 backdrop-blur-3xl border-2 border-white/50 rotate-[-35deg] shadow-2xl flex items-center justify-center overflow-hidden opacity-70">
+          <div className="w-[4px] h-full bg-white/60" />
+          <div className="absolute top-4 left-10 w-[200px] h-[40px] bg-white/40 blur-xl rounded-full" />
+        </div>
+      </div>
+
+      <div className="relative z-10 w-full flex flex-col min-h-screen">
+        <Navbar />
+
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
         {/* Doctor Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-8">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md border border-sky-600">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-purple-500 text-white flex items-center justify-center font-bold text-2xl shadow-md border border-white/60">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'D'}
             </div>
             <div>
@@ -118,7 +152,7 @@ export default function DoctorDashboard() {
         {/* Summary Metrics Cards */}
         {currentPath === '/doctor' && !result && !selectedPatient && (
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-5 shadow-xl space-y-2 medtwin-hover-glow ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">Pending Reviews</span>
                 <Users className="w-4 h-4 text-sky-500" />
@@ -127,7 +161,7 @@ export default function DoctorDashboard() {
               <p className="text-slate-500 text-xs">Patient cases awaiting sign-off</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-5 shadow-xl space-y-2 medtwin-hover-glow ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">High-Risk Cases</span>
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -138,7 +172,7 @@ export default function DoctorDashboard() {
               <p className="text-slate-500 text-xs">Require priority clinical review</p>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-5 shadow-xl space-y-2 medtwin-hover-glow ring-1 ring-black/5">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-bold uppercase">Total Patients Reviewed</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -151,7 +185,7 @@ export default function DoctorDashboard() {
 
         {/* Dynamic Route Content */}
         {currentPath === '/doctor/history' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
             <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl mb-4 flex items-center gap-2">
               <span className="font-bold">Demo Note:</span> This section is currently displaying mock directory data for demonstration purposes.
             </div>
@@ -220,7 +254,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
         ) : currentPath === '/doctor/approvals' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
               <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
                 <Stethoscope className="w-5 h-5 text-emerald-500" />
@@ -294,7 +328,7 @@ export default function DoctorDashboard() {
           <div className="space-y-6">
 
             {/* Upload Area for Doctor */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="text-slate-900 font-bold text-sm">Upload Patient Report for Direct Review</h3>
                 <p className="text-slate-500 text-xs mt-0.5">Upload a report file to process through the AI agents and review output.</p>
@@ -309,7 +343,7 @@ export default function DoctorDashboard() {
             </div>
 
             {/* Patient Queue Table */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
               <h3 className="text-slate-900 font-bold text-base">Patient Review Queue</h3>
 
               <div className="overflow-x-auto">
@@ -384,7 +418,7 @@ export default function DoctorDashboard() {
           <div className="space-y-6">
 
             {/* Doctor Review Actions Bar */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
+            <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
@@ -459,7 +493,7 @@ export default function DoctorDashboard() {
                 <AgentResults result={result || selectedPatient?.details} />
               </div>
             ) : selectedPatient && selectedPatient.ai_recommendation ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
+              <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
                 <h3 className="text-slate-900 font-bold text-sm">AI Recommendation Summary</h3>
                 <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
                   {selectedPatient.ai_recommendation}
@@ -476,7 +510,7 @@ export default function DoctorDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4 medtwin-hover-glow">
+              <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-6 shadow-xl space-y-4 medtwin-hover-glow ring-1 ring-black/5">
                 <h3 className="text-slate-900 font-bold text-sm">Patient Case Selection</h3>
                 <p className="text-slate-500 text-xs">
                   Select a patient from the queue or upload a new report to inspect structured AI agent results.
@@ -487,7 +521,7 @@ export default function DoctorDashboard() {
         )}
 
         {/* Functional Blockchain Integration Component */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-sm medtwin-hover-glow">
+        <div className="bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl p-5 flex items-center justify-between flex-wrap gap-4 shadow-xl medtwin-hover-glow ring-1 ring-black/5">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-sky-500" />
             <div className="text-sm">
@@ -508,9 +542,10 @@ export default function DoctorDashboard() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+      <footer className="border-t border-white/50 bg-white/30 backdrop-blur-sm py-4 text-center text-xs text-slate-500 relative z-10">
         MedTwin AI Platform · Doctor Review Portal
       </footer>
+      </div>
     </div>
   );
 }

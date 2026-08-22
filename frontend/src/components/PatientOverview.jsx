@@ -10,8 +10,10 @@ export default function PatientOverview({ user, result, recStatus, reportId }) {
     return 'Good evening';
   };
 
-  const name = user?.name || 'Priyanshi';
-  const greetingText = `${getGreeting()}, ${name.split(' ')[0]}`;
+  const rawName = user?.name || 'Priyanshi';
+  const firstName = rawName.split(' ')[0];
+  const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  const greetingText = `${getGreeting()}, ${formattedName}`;
 
   const triageLevel = result?.emergency_analysis?.triage_level || 'routine';
   const doctorApproved = recStatus === 'approved';
@@ -75,7 +77,7 @@ export default function PatientOverview({ user, result, recStatus, reportId }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 tracking-tight drop-shadow-sm">
               {greetingText}
             </h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-200/60 text-sky-700 text-xs font-semibold">
