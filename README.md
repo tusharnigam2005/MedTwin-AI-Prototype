@@ -1,12 +1,56 @@
-# MedTwin AI — Autonomous AI Healthcare Digital Twin
+# 🧬 MedTwin AI — Autonomous AI Healthcare Digital Twin
 
-**MedTwin AI** is a persistent, continuously updated virtual model of a patient's medical state powered by **Multi-Agent AI (LangGraph)** and **Blockchain (Polygon)**.
+> **MedTwin AI** is a persistent, continuously updated virtual model of a patient's medical state, powered by **Multi-Agent AI orchestration (LangGraph)** and secured by an **Immutable Blockchain Layer (Polygon)**.
+
+## 🚀 Live Links
+- 🌐 **Deployed Application**: [http://13.239.27.137:5173/](http://13.239.27.137:5173/)
+- 🎥 **Demo Video**: [Watch on Google Drive](https://drive.google.com/file/d/1znYWZfhEb8mg85E34yCqPQnXe18clQU-/view?usp=sharing)
 
 ---
 
-## 🏗️ System Architecture & Technology Stack
+## 🚨 Problem Statement
+Healthcare data today is heavily fragmented, reactive, and vulnerable to tampering. 
+1. **Doctors** suffer from alert fatigue and lack unified, actionable patient insights due to manual chart reviews. 
+2. **Patients** do not have a real-time, holistic view of their health trajectory and risk factors.
+3. **Data Security** is compromised, with medical records lacking auditable, tamper-proof history, leading to privacy breaches and lack of trust.
 
-```
+## 💡 Our Solution
+**MedTwin AI** acts as a true **Digital Twin** for patients. Instead of generic LLM chatbots, we utilize an **explicit, stateful Multi-Agent Pipeline (LangGraph)** that continuously digests new physical lab reports, prescriptions, and wearable vitals to dynamically update the patient's health state. 
+
+To ensure absolute trust and HIPAA/GDPR compliance, raw data remains in a secure, private database. However, a cryptographic **SHA-256 hash of every medical event is permanently stored on the Polygon Blockchain**. This creates an immutable audit trail requiring Doctor cryptographic sign-offs, bridging AI innovation with Web3 security.
+
+---
+
+## ✨ Key Features & Portals
+
+### 🧑‍⚕️ Patient Portal (Real-time Health Tracking)
+* **Live Health Score**: A dynamic 0-100 wellness score calculated based on AI-analyzed vitals and lab results.
+* **Risk Trajectory Charts**: Interactive historical health data visualization utilizing `Recharts`.
+* **Automated Data Entry**: Drag-and-drop OCR pipeline to automatically parse physical blood test reports into structured JSON.
+
+### 🩺 Doctor Portal (Verification & Audit)
+* **AI Recommendation Queue**: Doctors review AI-generated risk flags, potential drug interactions, and lifestyle recommendations.
+* **One-Click Cryptographic Sign-off**: Doctors approve AI suggestions, signing the transaction directly onto the Polygon blockchain via their Web3 wallet.
+
+### 🧠 Deep Dive: The 5 Autonomous AI Agents (LangGraph)
+Our AI layer completely bypasses traditional reactive prompts. We use a LangGraph `StateGraph` where 5 specialized agents operate over a persistent `MedTwinState`:
+1. **Medical Report Agent**: Uses OCR to extract raw text from uploaded reports, parses it into structured lab values (e.g., `HbA1c: 6.8%`), and assigns a confidence score.
+2. **Health Prediction Agent**: Analyzes the parsed data to output a disease risk score and determines if the patient's trend is improving or worsening.
+3. **Medication Agent**: Cross-checks active prescriptions against new OCR data to prevent fatal drug interactions and manages scheduling.
+4. **Lifestyle Agent**: Consolidates risk profiles into personalized daily targets (Diet, Sleep, Exercise, Hydration).
+5. **Emergency Agent**: Bypasses the queue to alert on real-time vitals threshold breaches (e.g., `Sustained Heart Rate > 140bpm`).
+
+### ⛓️ Deep Dive: Polygon Blockchain Security Layer
+Medical records require absolute immutability. Our EVM Smart Contract (`MedTwinTrust.sol`) on the **Polygon Amoy Testnet** handles:
+* **Tamper-Proof Hashing**: The backend generates a SHA-256 hash of the medical report. Only this hash is stored on-chain, keeping raw data private.
+* **`verifyHash()`**: A function that instantly detects if a database record has been maliciously altered.
+* **Doctor Approvals**: Records the exact timestamp and Wallet Address of the physician who approved the AI recommendation.
+
+---
+
+## 🏗️ System Architecture
+
+```text
 +-----------------------------------------------------------------------------------+
 |                            REACT + TAILWIND CSS (Frontend)                        |
 |                     Patient Dashboard | Doctor Portal | Admin UI                  |
@@ -22,98 +66,40 @@
 +-------------------------+     +-------------------------+     +-------------------------+
 |     LANGGRAPH AI/ML     |     |       DATA LAYER        |     |     POLYGON BLOCKCHAIN  |
 | 5 Specialized AI Agents |     | ACID-Compliant Postgres |     | Immutable Audit Trail   |
-| + OCR Document Pipeline |     | + IPFS Report Storage   |     | Doctor Signature Verify |
 +-------------------------+     +-------------------------+     +-------------------------+
 ```
 
-### Technology Stack (Slide 31)
-- **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, Recharts (`frontend/`)
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, Pydantic, PostgreSQL (`backend/`)
-- **AI/ML Layer**: LangGraph, Groq/OpenAI LLMs, PaddleOCR / Tesseract (`ai/`)
-- **Blockchain Layer**: Polygon (Amoy Testnet), Solidity, Hardhat, Ethers.js (`blockchain/`)
-- **Infrastructure**: Docker & Docker Compose (`docker-compose.yml`)
+## 🛠️ Complete Technology Stack
+* **Frontend**: React 18, Vite, Tailwind CSS (Glassmorphism), Recharts.
+* **Backend**: Python 3.11+, FastAPI, SQLAlchemy, PostgreSQL.
+* **AI/ML Layer**: LangGraph, Groq/OpenAI LLMs, PaddleOCR / Tesseract.
+* **Blockchain Layer**: Polygon (Amoy Testnet), Solidity, Hardhat, Ethers.js.
+* **Infrastructure**: Docker & Docker Compose / AWS EC2.
 
 ---
 
-## 👥 Hackathon Team & Branch Strategy
+## 🚀 Step-by-Step Local Setup Guide
 
-We have 4 dedicated developers working in parallel. To ensure **zero merge conflicts** and maintain absolute stability, each developer owns their specific domain directory and Git branch:
-
-| Developer Role | Git Branch | Assigned Directory | Key Responsibilities |
-| :--- | :--- | :--- | :--- |
-| **Project Lead & Backend Dev** | `backend` & `main` | `backend/` | FastAPI routes, PostgreSQL database schema, REST endpoints, team PR review & merges |
-| **Frontend Developer** | `frontend` | `frontend/` | React SPA, Role-based dashboards (Patient/Doctor/Admin), Tailwind styling, API integration |
-| **Blockchain Developer** | `blockchain` | `blockchain/` | `MedTwinTrust.sol` smart contract, Polygon deployment scripts, SHA-256 hash verification |
-| **AI / ML Developer** | `aiml` | `ai/` | LangGraph 5-agent state graph, PaddleOCR/Tesseract pipeline, prompt engineering & RAG |
-
----
-
-## 🚀 Daily Collaboration & Git Workflow Guide
-
-> [!IMPORTANT]
-> **RULE #1**: Only the **Team Lead** (`backend`) merges pull requests into the `main` branch after code review. No direct pushes to `main` by anyone else!
-> **RULE #2**: Work only inside your assigned folder (`frontend/`, `backend/`, `blockchain/`, or `ai/`) on your specific dev branch (`frontend`, `blockchain`, `aiml`).
-
-### 1. Initial Setup for All Developers (Run Once)
-Clone the repository and switch to your assigned development branch:
-```bash
-# Clone the repository
-git clone https://github.com/<your-username>/MedTwin-AI.git
-cd MedTwin-AI
-
-# Switch to your assigned branch (example for Frontend dev):
-git checkout -b frontend origin/frontend
-```
-
-### 2. Daily Morning Routine (Stay in Sync!)
-Before writing code every morning, pull any changes that were merged into `main` overnight:
-```bash
-git fetch origin
-git merge origin/main
-```
-*Since everyone works in separate directories, this will merge cleanly without conflicts!*
-
-### 3. Writing Code & Committing
-While working inside your folder (`frontend/`, `blockchain/`, `ai/`), commit frequently:
-```bash
-git status
-git add .
-git commit -m "feat(frontend): implement risk chart in patient dashboard"
-```
-
-### 4. Pushing Code at the End of the Day
-Push only to your assigned remote branch:
-```bash
-# Frontend dev:
-git push origin frontend
-
-# Blockchain dev:
-git push origin blockchain
-
-# AI/ML dev:
-git push origin aiml
-
-# Backend dev (Lead):
-git push origin backend
-```
-
-### 5. Requesting Review & Merging into `main`
-When your feature or daily task is complete:
-1. Open GitHub $\rightarrow$ Go to **Pull Requests** $\rightarrow$ Click **New Pull Request**.
-2. Set **base: `main`** $\leftarrow$ **compare: `frontend`** (or your branch).
-3. Assign the **Team Lead** for review.
-4. The Team Lead reviews, tests, and clicks **Merge Pull Request**.
-
----
-
-## ⚡ Quick Start (Local Docker Setup)
-
-To spin up the full stack locally with a single command (`docker-compose.yml` from Slide 35):
+### Option 1: One-Click Docker Setup (Recommended)
+You can spin up the entire application stack (Frontend, Backend, and Database) with a single command:
 ```bash
 docker compose up --build
 ```
-- **Frontend App**: `http://localhost:5173`
-- **Backend API & Swagger Docs**: `http://localhost:8000/docs`
-- **PostgreSQL Database**: `localhost:5432` (User: `postgres`, Pass: `postgres`)
+* **Frontend UI**: `http://localhost:5173`
+* **FastAPI Swagger Docs**: `http://localhost:8000/docs`
 
-Refer to the individual `README.md` files inside `backend/`, `frontend/`, `blockchain/`, and `ai/` for detailed domain-specific instructions.
+### Option 2: Manual Setup
+#### 1. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+#### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
