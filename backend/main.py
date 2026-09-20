@@ -19,7 +19,7 @@ load_dotenv(_env_path)
 # ──────────────────────────────────────────────────────────────────────────
 
 from app.db.database import engine, Base
-from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor, patient, admin, appointments, messages
+from app.routes import auth, reports, prediction, recommendation, history, blockchain, doctor, patient, admin, appointments, messages, symptoms
 
 from ai.document_processor import process_document
 from ai.graph import medtwin_graph
@@ -54,6 +54,7 @@ app.include_router(patient.router, prefix="/api/patient", tags=["Patient Profile
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin System Monitor"])
 app.include_router(appointments.router, prefix="/api/appointments", tags=["Appointments"])
 app.include_router(messages.router, prefix="/api/messages", tags=["Messaging"])
+app.include_router(symptoms.router)
 
 @app.get("/", tags=["Health Check"])
 def health_check():

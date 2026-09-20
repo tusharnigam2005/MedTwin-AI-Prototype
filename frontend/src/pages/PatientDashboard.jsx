@@ -8,6 +8,7 @@ import AgentResults from '../components/AgentResults';
 import EmptyState from '../components/EmptyState';
 import AnimatedSection from '../components/AnimatedSection';
 import MyReportsList from '../components/MyReportsList';
+import SymptomChecker from '../components/SymptomChecker';
 import PatientHistoryTimeline from '../components/PatientHistoryTimeline';
 import AppointmentsList from '../components/AppointmentsList';
 import MessagesList from '../components/MessagesList';
@@ -172,7 +173,7 @@ export default function PatientDashboard() {
           /* MAIN DASHBOARD CONTENT ROUTE */
           <div className="space-y-8">
             {/* 1. SMART HERO / PATIENT OVERVIEW */}
-            <AnimatedSection delay={0}>
+            <AnimatedSection delay={0} className="relative z-50">
               <PatientOverview
                 user={user}
                 result={result}
@@ -182,7 +183,7 @@ export default function PatientDashboard() {
             </AnimatedSection>
 
             {/* 2. INTERACTIVE HEALTH SCORE */}
-            <AnimatedSection delay={60}>
+            <AnimatedSection delay={60} className="relative z-40">
               <HealthScore result={result} onUploadClick={scrollToUpload} />
             </AnimatedSection>
 
