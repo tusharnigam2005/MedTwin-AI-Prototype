@@ -1,6 +1,8 @@
 import chromadb
-from sentence_transformers import SentenceTransformer
 import logging
+import os
+import numpy as np
+from google import genai
 
 logger = logging.getLogger(__name__)
 
@@ -9,13 +11,29 @@ chroma_client = chromadb.Client()
 # Create or get the collection
 collection = chroma_client.get_or_create_collection(name="symptoms_to_tests")
 
-# Load embedding model
-logger.info("Loading sentence-transformers model (all-MiniLM-L6-v2)...")
+class GeminiEmbedder:
+    def __init__(self):
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            logger.warning("GEMINI_API_KEY not found. Please set it in your environment.")
+        self.client = genai.Client(api_key=api_key)
+        
+    def encode(self, texts):
+        if isinstance(texts, str):
+            texts = [texts]
+        response = self.client.models.embed_content(
+            model="text-embedding-004",
+            contents=texts
+        )
+        return np.array([emb.values for emb in response.embeddings])
+
+# Load embedding model via API
+logger.info("Loading Gemini API Embedder (text-embedding-004)...")
 try:
-    embedder = SentenceTransformer('all-MiniLM-L6-v2')
+    embedder = GeminiEmbedder()
 except Exception as e:
-    logger.error(f"Failed to load sentence-transformers: {e}")
-    raise e
+    logger.error(f"Failed to load Gemini Embedder: {e}")
+    embedder = None
 
 from app.services.medical_dataset import MEDICAL_DATASET
 
