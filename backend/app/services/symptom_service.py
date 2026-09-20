@@ -1,6 +1,7 @@
 import chromadb
-from sentence_transformers import SentenceTransformer
 import logging
+import numpy as np
+from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 
 logger = logging.getLogger(__name__)
 
@@ -9,13 +10,24 @@ chroma_client = chromadb.Client()
 # Create or get the collection
 collection = chroma_client.get_or_create_collection(name="symptoms_to_tests")
 
-# Load embedding model
-logger.info("Loading sentence-transformers model (all-MiniLM-L6-v2)...")
+class ONNXEmbedder:
+    def __init__(self):
+        # Uses the exact same all-MiniLM-L6-v2 model, but compiled to ONNX for ultra-lightweight CPU inference
+        self.ef = ONNXMiniLM_L6_V2(preferred_providers=["CPUExecutionProvider"])
+        
+    def encode(self, texts):
+        if isinstance(texts, str):
+            texts = [texts]
+        embeddings = self.ef(texts)
+        return np.array(embeddings)
+
+# Load embedding model completely locally
+logger.info("Loading local ONNX model (all-MiniLM-L6-v2)...")
 try:
-    embedder = SentenceTransformer('all-MiniLM-L6-v2')
+    embedder = ONNXEmbedder()
 except Exception as e:
-    logger.error(f"Failed to load sentence-transformers: {e}")
-    raise e
+    logger.error(f"Failed to load ONNX Embedder: {e}")
+    embedder = None
 
 from app.services.medical_dataset import MEDICAL_DATASET
 
