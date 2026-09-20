@@ -13,7 +13,7 @@ class UserBase(BaseModel):
     role: str = Field(..., description="Role must be 'patient', 'doctor', or 'admin'")
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=6, description="Raw password before hashing")
+    password: str = Field(..., description="Raw password before hashing")
     full_name: Optional[str] = None
     wallet_address: Optional[str] = None
 
