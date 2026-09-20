@@ -27,6 +27,7 @@ jobs:
             echo "=========================================================="
             echo "🚀 Starting Automated Deployment on Cloud Server..."
             echo "=========================================================="
+            
             echo "Stopping old containers to free up ports..."
             if [ "$(sudo docker ps -q)" ]; then
               sudo docker stop $(sudo docker ps -q)
@@ -53,14 +54,14 @@ jobs:
 
             echo "Creating required env file to prevent docker crash..."
             mkdir -p ai
-            echo 'GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"' > ai/.env
+            touch ai/.env
 
             echo "Setting up production API URL for the frontend..."
-            echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_IP }}:5173" > frontend/.env.production
+            echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_IP }}:8000" > frontend/.env.production
+            echo "GEMINI_API_KEY=\"${{ secrets.GEMINI_API_KEY }}\"" > ai/.env
 
             echo "Building and starting Docker containers..."
             sudo docker compose up --build -d
             
             echo "✅ Docker architecture rebuilt and running successfully!"
             sudo docker ps
-
