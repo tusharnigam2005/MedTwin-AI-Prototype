@@ -1,8 +1,7 @@
 import chromadb
 import logging
-import os
 import numpy as np
-from google import genai
+from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 
 logger = logging.getLogger(__name__)
 
@@ -11,28 +10,23 @@ chroma_client = chromadb.Client()
 # Create or get the collection
 collection = chroma_client.get_or_create_collection(name="symptoms_to_tests")
 
-class GeminiEmbedder:
+class ONNXEmbedder:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            logger.warning("GEMINI_API_KEY not found. Please set it in your environment.")
-        self.client = genai.Client(api_key=api_key)
+        # Uses the exact same all-MiniLM-L6-v2 model, but compiled to ONNX for ultra-lightweight CPU inference
+        self.ef = ONNXMiniLM_L6_V2(preferred_providers=["CPUExecutionProvider"])
         
     def encode(self, texts):
         if isinstance(texts, str):
             texts = [texts]
-        response = self.client.models.embed_content(
-            model="text-embedding-004",
-            contents=texts
-        )
-        return np.array([emb.values for emb in response.embeddings])
+        embeddings = self.ef(texts)
+        return np.array(embeddings)
 
-# Load embedding model via API
-logger.info("Loading Gemini API Embedder (text-embedding-004)...")
+# Load embedding model completely locally
+logger.info("Loading local ONNX model (all-MiniLM-L6-v2)...")
 try:
-    embedder = GeminiEmbedder()
+    embedder = ONNXEmbedder()
 except Exception as e:
-    logger.error(f"Failed to load Gemini Embedder: {e}")
+    logger.error(f"Failed to load ONNX Embedder: {e}")
     embedder = None
 
 from app.services.medical_dataset import MEDICAL_DATASET
