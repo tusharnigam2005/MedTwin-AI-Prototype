@@ -15,13 +15,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 import bcrypt
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-    except Exception:
+    except Exception as e:
+        print(f"Bcrypt error: {e}")
         return False
-
 
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -44,18 +43,21 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    print(f"[DEBUG AUTH] Incoming token from oauth2_scheme: '{token}'")
     try:
-        print(f"[DEBUG AUTH] Received token: {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print(f"[DEBUG AUTH] Decoded payload: {payload}")
         email: str = payload.get("sub")
         if email is None:
+            print("[DEBUG AUTH] Failed: 'sub' (email) is None in JWT payload")
             raise credentials_exception
-    except JWTError:
+    except JWTError as e:
+        print(f"[DEBUG AUTH] Failed: JWTError decoding token: {e}")
         raise credentials_exception
     
     user = db.query(User).filter(User.email == email).first()
     if user is None:
+        print(f"[DEBUG AUTH] Failed: User with email '{email}' not found in database")
         raise credentials_exception
     return user
 

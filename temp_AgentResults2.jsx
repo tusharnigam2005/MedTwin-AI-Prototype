@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   FileText, Activity, TrendingUp, Pill, HeartHandshake,
   ShieldAlert, Sparkles, Info, AlertTriangle, CheckCircle2,
@@ -29,20 +29,20 @@ export default function AgentResults({ result, initialTab = 'all' }) {
     if (level === 'emergency') {
       return (
         <span className="px-3 py-1 rounded-full bg-red-100 border border-red-200 text-red-700 text-xs font-bold flex items-center gap-1">
-          🚨 EMERGENCY LEVEL
+          ≡ƒÜ¿ EMERGENCY LEVEL
         </span>
       );
     }
     if (level === 'urgent') {
       return (
         <span className="px-3 py-1 rounded-full bg-amber-100 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-1">
-          ⚠️ URGENT CLINICAL REVIEW
+          ΓÜá∩╕Å URGENT CLINICAL REVIEW
         </span>
       );
     }
     return (
       <span className="px-3 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1">
-        ✅ ROUTINE FOLLOW-UP
+        Γ£ô ROUTINE FOLLOW-UP
       </span>
     );
   };
@@ -112,7 +112,7 @@ export default function AgentResults({ result, initialTab = 'all' }) {
             <div className="bg-sky-50/60 border border-sky-100 rounded-xl p-4 space-y-1">
               <p className="font-semibold text-slate-500">Emergency Services Needed:</p>
               <p className={`font-bold text-sm ${emergency.emergency_services_needed ? 'text-red-600' : 'text-emerald-700'}`}>
-                {emergency.emergency_services_needed ? '🚨 YES — IMMEDIATE ATTENTION REQUIRED' : '✅ Not Required'}
+                {emergency.emergency_services_needed ? '≡ƒÜ¿ YES ΓÇö IMMEDIATE ATTENTION REQUIRED' : 'Γ£ô Not Required'}
               </p>
             </div>
           </div>
@@ -271,25 +271,25 @@ export default function AgentResults({ result, initialTab = 'all' }) {
           {typeof health.health_score === 'number' && (() => {
             const score = health.health_score;
             let bgClass = 'bg-emerald-600 border-emerald-700 text-white';
-            let statusText = 'Optimal Health Score — Minimal risk indicators';
-            let icon = '✨';
+            let statusText = 'Optimal Health Score ΓÇö Minimal risk indicators';
+            let icon = 'Γ£¿';
 
             if (score < 40) {
               bgClass = 'bg-red-600 border-red-700 text-white shadow-red-100';
-              statusText = 'Critical Health Score — Urgent clinical evaluation required';
-              icon = '🚨';
+              statusText = 'Critical Health Score ΓÇö Urgent clinical evaluation required';
+              icon = '≡ƒÜ¿';
             } else if (score < 55) {
               bgClass = 'bg-rose-500 border-rose-600 text-white shadow-rose-100';
-              statusText = 'Significant Risk Score — Multiple health concerns detected';
-              icon = '⚠️';
+              statusText = 'Significant Risk Score ΓÇö Multiple health concerns detected';
+              icon = 'ΓÜá∩╕Å';
             } else if (score < 70) {
               bgClass = 'bg-lime-600 border-lime-700 text-white shadow-lime-100';
-              statusText = 'Moderate Health Score — Notable risk factors present';
-              icon = '🌱';
+              statusText = 'Moderate Health Score ΓÇö Notable risk factors present';
+              icon = '≡ƒî▒';
             } else if (score < 85) {
               bgClass = 'bg-green-600 border-green-700 text-white shadow-green-100';
-              statusText = 'Good Health Score — Strong overall medical markers';
-              icon = '🌿';
+              statusText = 'Good Health Score ΓÇö Strong overall medical markers';
+              icon = '≡ƒî┐';
             }
 
             return (

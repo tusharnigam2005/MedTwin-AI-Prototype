@@ -11,6 +11,10 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
   // Editable fields
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+  const [gender, setGender] = useState('');
+  const [dob, setDob] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [email, setEmail] = useState('');
 
   // Auto-calculated BMI
   const bmi = (weight && height) 
@@ -38,6 +42,10 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
       setProfileData(data);
       setWeight(data.medical_history?.weight || '');
       setHeight(data.medical_history?.height || '');
+      setGender(data.gender || '');
+      setDob(data.dob || '');
+      setBloodGroup(data.medical_history?.blood_group || '');
+      setEmail(data.email || user?.email || '');
     } catch (err) {
       console.error("Failed to fetch profile", err);
       setError("Failed to load profile data.");
@@ -54,7 +62,7 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
       const token = localStorage.getItem('medtwin_jwt') || localStorage.getItem('medtwin_token');
       
       await axios.put(`${baseUrl}/api/patient/profile`, 
-        { weight, height },
+        { weight, height, gender, dob, blood_group: bloodGroup, email },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -77,7 +85,7 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-sky-400 to-purple-500 px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3 text-white">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30">
               <User className="w-5 h-5" />
@@ -109,35 +117,74 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
           ) : (
             <div className="space-y-6">
               
-              {/* Static Basic Info */}
+              {/* Personal Information */}
               <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4" />
-                  Verified Identity
+                  Personal Information
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase">Full Name</p>
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 opacity-70">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase">Full Name (Locked)</p>
                     <p className="text-sm font-bold text-slate-800 mt-0.5">{user?.name || profileData?.email}</p>
                   </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase">Gender</p>
-                    <p className="text-sm font-bold text-slate-800 mt-0.5 capitalize">{profileData?.gender || 'Not specified'}</p>
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center justify-between">Email</label>
+                    <input 
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="Email address"
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-text"
+                    />
                   </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase">Date of Birth</p>
-                    <p className="text-sm font-bold text-slate-800 mt-0.5">{profileData?.dob || 'Not specified'}</p>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gender</label>
+                    <select 
+                      value={gender}
+                      onChange={e => setGender(e.target.value)}
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-pointer capitalize"
+                    >
+                      <option value="">Select</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Date of Birth</label>
+                    <input 
+                      type="date"
+                      value={dob}
+                      onChange={e => setDob(e.target.value)}
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-text"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
                       <Droplet className="w-3 h-3 text-rose-500" /> Blood Group
-                    </p>
-                    <p className="text-sm font-bold text-slate-800 mt-0.5">{profileData?.medical_history?.blood_group || 'Not specified'}</p>
+                    </label>
+                    <select 
+                      value={bloodGroup}
+                      onChange={e => setBloodGroup(e.target.value)}
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-pointer"
+                    >
+                      <option value="">Select</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                    </select>
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 ml-1">
-                  * Identity verified during account creation. Contact administration to modify.
-                </p>
               </div>
 
               {/* Dynamic Vitals */}
@@ -158,7 +205,7 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
                       value={weight}
                       onChange={e => setWeight(e.target.value)}
                       placeholder="e.g. 70"
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all"
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-text"
                     />
                   </div>
 
@@ -172,7 +219,7 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
                       value={height}
                       onChange={e => setHeight(e.target.value)}
                       placeholder="e.g. 175"
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all"
+                      className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all cursor-text"
                     />
                   </div>
                 </div>
@@ -215,7 +262,7 @@ export default function PatientProfileModal({ isOpen, onClose, user }) {
           <button 
             onClick={handleSave}
             disabled={saving || loading}
-            className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-sm shadow-sky-500/30 transition-all disabled:opacity-70 flex items-center gap-2"
+            className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-400 to-purple-500 hover:from-sky-500 hover:to-purple-600 shadow-md shadow-purple-500/30 transition-all disabled:opacity-70 flex items-center gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {saving ? 'Saving...' : 'Save Profile'}

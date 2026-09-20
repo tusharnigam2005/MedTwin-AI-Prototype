@@ -13,6 +13,51 @@ class ApprovalRequest(BaseModel):
     action_status: str  # 'approved' or 'rejected'
     override_notes: str | None = None
 
+@router.get("/all", summary="Get public list of all doctors")
+def get_all_doctors(db: Session = Depends(get_db)):
+    doctors = db.query(Doctor).all()
+    result = []
+    for doc in doctors:
+        user = db.query(User).filter(User.id == doc.user_id).first()
+        name = user.email.split('@')[0].replace('.', ' ').title() if user else f"Doctor {doc.id}"
+        result.append({
+            "id": doc.id,
+            "user_id": doc.user_id,
+            "name": f"Dr. {name}",
+            "specialization": doc.specialization or "General Medicine"
+        })
+    return result
+
+@router.get("/all", summary="Get public list of all doctors")
+def get_all_doctors(db: Session = Depends(get_db)):
+    doctors = db.query(Doctor).all()
+    result = []
+    for doc in doctors:
+        user = db.query(User).filter(User.id == doc.user_id).first()
+        name = user.email.split('@')[0].replace('.', ' ').title() if user else f"Doctor {doc.id}"
+        result.append({
+            "id": doc.id,
+            "user_id": doc.user_id,
+            "name": f"Dr. {name}",
+            "specialization": doc.specialization or "General Medicine"
+        })
+    return result
+
+@router.get("/all", summary="Get public list of all doctors")
+def get_all_doctors(db: Session = Depends(get_db)):
+    doctors = db.query(Doctor).all()
+    result = []
+    for doc in doctors:
+        user = db.query(User).filter(User.id == doc.user_id).first()
+        name = user.email.split('@')[0].replace('.', ' ').title() if user else f"Doctor {doc.id}"
+        result.append({
+            "id": doc.id,
+            "user_id": doc.user_id,
+            "name": f"Dr. {name}",
+            "specialization": doc.specialization or "General Medicine"
+        })
+    return result
+
 @router.get("/queue", summary="Get pending recommendations for Doctor review")
 def get_doctor_queue(
     db: Session = Depends(get_db),
