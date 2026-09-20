@@ -61,16 +61,6 @@ export default function LandingPage() {
         setLoading(false);
         return;
       }
-      if (formData.password.length < 8) {
-        setError('Password must be at least 8 characters long.');
-        setLoading(false);
-        return;
-      }
-      if (!/\d/.test(formData.password) || !/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-        setError('Password must contain at least one number and one special character.');
-        setLoading(false);
-        return;
-      }
       if (formData.password !== formData.confirmPassword) {
         setError('Passwords do not match.');
         setLoading(false);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Activity, TrendingUp, FileText, CheckCircle2, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
+import SymptomChecker from './SymptomChecker';
 
 export default function PatientOverview({ user, result, recStatus, reportId }) {
   // Determine greeting based on current time
@@ -74,8 +75,8 @@ export default function PatientOverview({ user, result, recStatus, reportId }) {
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4 relative z-50">
+        <div className="flex-shrink-0">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 tracking-tight drop-shadow-sm">
               {greetingText}
@@ -90,7 +91,12 @@ export default function PatientOverview({ user, result, recStatus, reportId }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Mid Search Bar */}
+        <div className="flex-grow max-w-xl w-full">
+          <SymptomChecker />
+        </div>
+
+        <div className="flex-shrink-0 flex items-center gap-2">
           <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span>ID: {user?.id || 'PT-101'}</span>
@@ -99,7 +105,7 @@ export default function PatientOverview({ user, result, recStatus, reportId }) {
       </div>
 
       {/* Compact Health Snapshot Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
         {/* Health Status */}
         <div className="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3.5 space-y-1 medtwin-hover-glow transition-all">
           <div className="flex items-center justify-between">

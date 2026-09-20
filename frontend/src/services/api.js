@@ -56,4 +56,8 @@ export const doctorAPI = {
     api.post(`/api/doctor/approve/${recordId}`, { action_status: status, override_notes: overrideNotes }),
 };
 
+export const symptomsAPI = {
+  recommendTest: (query) => api.post('/api/symptoms/recommend', { query }),
+};
+
 export default api;
