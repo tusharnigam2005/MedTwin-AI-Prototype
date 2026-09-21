@@ -1,5 +1,5 @@
 import os
-import fitz
+from pypdf import PdfReader
 from google import genai
 from google.genai import types
 
@@ -39,95 +39,25 @@ def extract_text_with_ocr(image_path: str) -> str:
 
 def extract_text_from_pdf(file_path: str) -> str:
     """
-    Extract text from a PDF.
-
-    First tries normal PDF text extraction.
-
-    If no useful text exists, it automatically
-    converts PDF pages to images and uses OCR.
+    Extract text from a PDF using pypdf.
     """
-
     if not os.path.exists(file_path):
-        raise FileNotFoundError(
-            f"PDF file not found: {file_path}"
-        )
+        raise FileNotFoundError(f"PDF file not found: {file_path}")
 
     try:
-
-        document = fitz.open(file_path)
-
+        reader = PdfReader(file_path)
         extracted_text = []
-
-        for page_number, page in enumerate(document):
-
-            # -----------------------------------
-            # Try normal PDF extraction first
-            # -----------------------------------
-
-            text = page.get_text().strip()
-
+        for page in reader.pages:
+            text = page.extract_text()
             if text:
-
                 extracted_text.append(text)
-
-            else:
-
-                print(
-                    f"Page {page_number + 1} "
-                    f"has no selectable text. Running OCR..."
-                )
-
-                # -----------------------------------
-                # Convert scanned page to image
-                # -----------------------------------
-
-                pixmap = page.get_pixmap(
-                    matrix=fitz.Matrix(2, 2)
-                )
-
-                temp_image = (
-                    f"_temp_page_{page_number}.png"
-                )
-
-                pixmap.save(temp_image)
-
-                try:
-
-                    # Run OCR
-                    ocr_text = extract_text_with_ocr(
-                        temp_image
-                    )
-
-                    extracted_text.append(
-                        ocr_text
-                    )
-
-                finally:
-
-                    # Delete temporary image
-                    if os.path.exists(temp_image):
-                        os.remove(temp_image)
-
-        document.close()
-
-        final_text = "\n\n".join(
-            extracted_text
-        )
-
+        
+        final_text = "\n\n".join(extracted_text)
         if not final_text.strip():
-
-            raise ValueError(
-                "No text could be extracted "
-                "from the PDF."
-            )
-
+            raise ValueError("No text could be extracted from the PDF (scanned PDFs require OCR which is disabled for server space).")
         return final_text.strip()
-
     except Exception as error:
-
-        raise RuntimeError(
-            f"Failed to process PDF: {error}"
-        )
+        raise RuntimeError(f"Failed to process PDF: {error}")
 
 
 def extract_text_from_image(
